@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-from app_employee import EmployeeApp
-from app_department import DepartmentApp
+from template.app_employee import EmployeeApp
+from template.app_department import DepartmentApp
 
 class MainApp(tk.Tk):
     def __init__(self):

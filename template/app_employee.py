@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from employee import Employee
-from employee_list import EmployeeList
+from enity.employee import Employee
+from service.employee_list import EmployeeList
 
 class EmployeeApp(tk.Frame):
     def __init__(self, parent):

@@ -1,4 +1,4 @@
-from department import Department
+from enity.department import Department
 
 class DepartmentList:
     def __init__(self):

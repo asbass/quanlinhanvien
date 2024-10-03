@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from department import Department
-from department_list import DepartmentList
+from enity.department import Department
+from service.department_list import DepartmentList
 
 class DepartmentApp(tk.Frame):
     def __init__(self, parent):
