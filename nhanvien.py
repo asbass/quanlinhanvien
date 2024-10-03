@@ -72,6 +72,7 @@ with tabs[1]:
                 st.success("Thông tin nhân viên đã được cập nhật.")
 
 # Tab Danh Sách Nhân Viên
+# Tab Danh Sách Nhân Viên
 with tabs[2]:
     st.subheader("Danh Sách Nhân Viên")
     
@@ -81,13 +82,18 @@ with tabs[2]:
     # Lựa chọn sắp xếp
     sort_by = st.selectbox("Sắp xếp theo", ["Tên", "Lương"])
 
-    # Lọc và sắp xếp danh sách nhân viên
+    # Nút để thực hiện sắp xếp
+    sort_button = st.button("Sắp xếp")
+
+    # Lọc danh sách nhân viên
     filtered_employees = [emp for emp in st.session_state.employees if search_name.lower() in emp.name.lower()]
 
-    if sort_by == "Tên":
-        filtered_employees.sort(key=lambda emp: emp.name)
-    else:
-        filtered_employees.sort(key=lambda emp: emp.salary, reverse=True)
+    # Nếu nút sắp xếp được nhấn
+    if sort_button:
+        if sort_by == "Tên":
+            filtered_employees.sort(key=lambda emp: emp.name)
+        else:
+            filtered_employees.sort(key=lambda emp: emp.salary, reverse=True)
 
     # Hiển thị danh sách nhân viên
     if filtered_employees:
@@ -105,7 +111,7 @@ with tabs[2]:
 # Tab Thống Kê
 with tabs[3]:
     st.subheader("Thống Kê Nhân Viên")
-    
+
     # Tạo DataFrame từ danh sách nhân viên
     employee_df = pd.DataFrame([vars(emp) for emp in st.session_state.employees])
 
@@ -115,11 +121,25 @@ with tabs[3]:
     highest_salary = employee_df["salary"].max()
     lowest_salary = employee_df["salary"].min()
 
-    # Hiển thị các thông tin thống kê
-    st.write(f"Tổng số nhân viên: {total_employees}")
-    st.write(f"Lương trung bình: {average_salary:.2f}")
-    st.write(f"Lương cao nhất: {highest_salary:.2f}")
-    st.write(f"Lương thấp nhất: {lowest_salary:.2f}")
+    # Định dạng các giá trị tiền tệ với phân cách hàng nghìn và đơn vị VND
+    formatted_average_salary = f"{average_salary:,.0f} VND"
+    formatted_highest_salary = f"{highest_salary:,.0f} VND"
+    formatted_lowest_salary = f"{lowest_salary:,.0f} VND"
+
+    # Hiển thị các thông tin thống kê bằng cách sử dụng các cột để phân chia thông tin
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("Tổng số nhân viên", total_employees)
+
+    with col2:
+        st.metric("Lương trung bình", formatted_average_salary)
+
+    with col3:
+        st.metric("Lương cao nhất", formatted_highest_salary)
+
+    with col4:
+        st.metric("Lương thấp nhất", formatted_lowest_salary)
 
     # 1. Biểu đồ cột - Lương trung bình theo chức vụ
     st.write("### Lương trung bình theo chức vụ:")
@@ -128,60 +148,25 @@ with tabs[3]:
         x=alt.X('position:N', title="Chức Vụ"),
         y=alt.Y('salary:Q', title="Lương Trung Bình"),
         tooltip=['position', 'salary']
-    ).properties(width=600, height=400)
+    ).properties(width=800, height=400)  # Đặt chiều rộng là 800 pixel
     st.altair_chart(bar_chart)
 
-   # 2. Biểu đồ tròn - Số lượng nhân viên theo chức vụ
+    # 2. Biểu đồ tròn - Số lượng nhân viên theo chức vụ
     st.write("### Tỉ lệ nhân viên theo chức vụ:")
-
-    # Tạo DataFrame chứa số lượng nhân viên theo chức vụ
     employee_count_by_position = employee_df.groupby("position").size().reset_index(name='count')
-
-    # Tạo biểu đồ tròn
     pie_chart = alt.Chart(employee_count_by_position).mark_arc().encode(
-      theta=alt.Theta(field="count", type="quantitative"),
-       color=alt.Color(field="position", type="nominal"),
-       tooltip=['position', 'count']
-    ).properties(width=600, height=400)
-
+        theta='count:Q',
+        color='position:N',
+        tooltip=['position', 'count']
+    ).properties(width=800, height=400)  # Đặt chiều rộng là 800 pixel
     st.altair_chart(pie_chart)
 
-
-    # 3. Biểu đồ đường - Lương theo tuổi
-    st.write("### Lương theo tuổi:")
-    line_chart = alt.Chart(employee_df).mark_line().encode(
-        x=alt.X('age:Q', title="Tuổi"),
-        y=alt.Y('salary:Q', title="Lương"),
-        tooltip=['age', 'salary']
-    ).properties(width=600, height=400)
-    st.altair_chart(line_chart)
-
-    # 4. Biểu đồ phân tán - Mối quan hệ giữa tuổi và lương
+    # 3. Biểu đồ tán xạ - Mối quan hệ giữa tuổi và lương
     st.write("### Mối quan hệ giữa tuổi và lương:")
-    scatter_chart = alt.Chart(employee_df).mark_circle().encode(
+    scatter_chart = alt.Chart(employee_df).mark_circle(size=60).encode(
         x=alt.X('age:Q', title="Tuổi"),
         y=alt.Y('salary:Q', title="Lương"),
-        size='salary',
-        color='position',
-        tooltip=['name', 'position', 'age', 'salary']
-    ).properties(width=600, height=400)
+        color='position:N',
+        tooltip=['name', 'age', 'salary', 'position']
+    ).properties(width=800, height=400)  # Đặt chiều rộng là 800 pixel
     st.altair_chart(scatter_chart)
-
-    # 5. Biểu đồ hộp - Phân phối lương theo chức vụ
-    st.write("### Phân phối lương theo chức vụ:")
-    box_plot = alt.Chart(employee_df).mark_boxplot().encode(
-        x='position:N',
-        y='salary:Q',
-        tooltip=['position', 'salary']
-    ).properties(width=600, height=400)
-    st.altair_chart(box_plot)
-
-    # 6. Biểu đồ nhiệt - Quan hệ giữa chức vụ và lương
-    st.write("### Quan hệ giữa chức vụ và lương:")
-    heatmap = alt.Chart(employee_df).mark_rect().encode(
-        x='position:N',
-        y='age:O',
-        color='salary:Q',
-        tooltip=['position', 'age', 'salary']
-    ).properties(width=600, height=400)
-    st.altair_chart(heatmap)
