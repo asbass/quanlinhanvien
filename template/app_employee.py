@@ -48,15 +48,31 @@ class EmployeeApp(tk.Frame):
         # Nút xóa
         self.delete_button = tk.Button(button_frame, text="Xóa Nhân Viên", command=self.delete_employee)
         self.delete_button.grid(row=0, column=2, padx=10)
+        search_frame = tk.Frame(self)
+        search_frame.pack(pady=10)
 
+        tk.Label(search_frame, text="Tìm kiếm:").pack(side=tk.LEFT, padx=5)
+        self.search_entry = tk.Entry(search_frame)
+        self.search_entry.pack(side=tk.LEFT, padx=5)
+
+        self.search_button = tk.Button(search_frame, text="Tìm", command=self.search_employee)
+        self.search_button.pack(side=tk.LEFT, padx=5)
+
+        self.reset_button = tk.Button(search_frame, text="Làm Mới", command=self.update_treeview)
+        self.reset_button.pack(side=tk.LEFT, padx=5)
         # Cây để hiển thị nhân viên
         self.tree = ttk.Treeview(self, columns=("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"), show="headings")
         self.tree.pack(pady=10)
+
+        # Biến để lưu trạng thái sắp xếp
+        self.sort_reverse = {col: False for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương")}
+
         for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"):
-            self.tree.heading(col, text=col)
+            # Thêm sự kiện sắp xếp khi nhấp vào tiêu đề cột
+            self.tree.heading(col, text=col, command=lambda _col=col: self.sort_column(_col, self.sort_reverse[_col]))
+            self.tree.column(col, anchor="center")  # Căn giữa nội dung cột
 
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
-
     def add_employee(self):
         name = self.name_entry.get()
         age = self.age_entry.get()
@@ -127,16 +143,62 @@ class EmployeeApp(tk.Frame):
             self.position_entry.insert(0, employee.position)
             self.salary_entry.delete(0, tk.END)
             self.salary_entry.insert(0, employee.salary)
-
-    def update_treeview(self):
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        for emp in self.employee_list.get_employees():
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
-
     def clear_entries(self):
         self.name_entry.delete(0, tk.END)
         self.age_entry.delete(0, tk.END)
         self.department_entry.delete(0, tk.END)
         self.position_entry.delete(0, tk.END)
         self.salary_entry.delete(0, tk.END)
+    def search_employee(self):
+        keyword = self.search_entry.get().lower()
+        filtered_employees = []
+
+        # Tìm kiếm theo tên trước
+        for emp in self.employee_list.get_employees():
+            if keyword in emp.name.lower():
+                filtered_employees.append(emp)
+
+        # Nếu không tìm thấy nhân viên nào theo tên, tìm kiếm theo phòng ban
+        if not filtered_employees:
+            for emp in self.employee_list.get_employees():
+                if keyword in emp.department.lower():
+                    filtered_employees.append(emp)
+
+        # Cập nhật Treeview với danh sách lọc
+        self.update_treeview(filtered_employees)
+
+    def sort_column(self, col, reverse):
+        # Lấy danh sách nhân viên hiện tại
+        employees = self.employee_list.get_employees()
+
+        # Sắp xếp theo cột đã chọn
+        if col == "ID":
+            employees.sort(key=lambda emp: emp.emp_id, reverse=reverse)
+        elif col == "Tên":
+            employees.sort(key=lambda emp: emp.name.lower(), reverse=reverse)
+        elif col == "Tuổi":
+            employees.sort(key=lambda emp: emp.age, reverse=reverse)
+        elif col == "Phòng Ban":
+            employees.sort(key=lambda emp: emp.department.lower(), reverse=reverse)
+        elif col == "Vị Trí":
+            employees.sort(key=lambda emp: emp.position.lower(), reverse=reverse)
+        elif col == "Lương":
+            employees.sort(key=lambda emp: emp.salary, reverse=reverse)
+
+        # Cập nhật trạng thái sắp xếp
+        self.sort_reverse[col] = not reverse
+
+        # Cập nhật Treeview với danh sách đã sắp xếp
+        self.update_treeview(employees)
+    def update_treeview(self, employees=None):
+        # Xóa dữ liệu cũ trong Treeview
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        # Nếu không có danh sách nào được truyền vào, hiển thị toàn bộ nhân viên
+        if employees is None:
+            employees = self.employee_list.get_employees()
+
+        # Thêm các nhân viên vào Treeview
+        for emp in employees:
+            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
