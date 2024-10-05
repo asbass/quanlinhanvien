@@ -64,12 +64,17 @@ class EmployeeApp(tk.Frame):
         position = self.position_entry.get()
         salary = self.salary_entry.get()
 
-        if name and age and department and position and salary:
+        # Kiểm tra điều kiện nhập liệu
+        if not name or not age or not department or not position or not salary:
+            messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
+        elif int(age) < 18 or int(age) > 60:
+            messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
+        elif not age.isdigit() or not salary.isdigit() or int(age) <= 0 or int(salary) <= 0:
+            messagebox.showwarning("Cảnh Báo", "Tuổi và lương phải là số dương!")
+        else:
             self.employee_list.add_employee(name, age, department, position, salary)
             self.update_treeview()
             self.clear_entries()
-        else:
-            messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
 
     def update_employee(self):
         selected_item = self.tree.selection()
@@ -81,14 +86,20 @@ class EmployeeApp(tk.Frame):
             position = self.position_entry.get()
             salary = self.salary_entry.get()
 
-            if name and age and department and position and salary:
+            # Kiểm tra điều kiện nhập liệu
+            if not name or not age or not department or not position or not salary:
+                messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
+            elif int(age) < 18 or int(age) > 60:
+                messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
+            elif not age.isdigit() or not salary.isdigit() or int(age) <= 0 or int(salary) <= 0:
+                messagebox.showwarning("Cảnh Báo", "Tuổi và lương phải là số dương!")
+            else:
                 self.employee_list.update_employee(index, name, age, department, position, salary)
                 self.update_treeview()
                 self.clear_entries()
-            else:
-                messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để sửa!")
+
 
     def delete_employee(self):
         selected_item = self.tree.selection()
