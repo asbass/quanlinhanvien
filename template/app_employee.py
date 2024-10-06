@@ -7,7 +7,6 @@ class EmployeeApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.employee_list = EmployeeList()
-
         # Khung nhập liệu
         self.frame = tk.Frame(self)
         self.frame.pack(pady=10)
@@ -71,8 +70,9 @@ class EmployeeApp(tk.Frame):
             # Thêm sự kiện sắp xếp khi nhấp vào tiêu đề cột
             self.tree.heading(col, text=col, command=lambda _col=col: self.sort_column(_col, self.sort_reverse[_col]))
             self.tree.column(col, anchor="center")  # Căn giữa nội dung cột
-
+        self.load_and_display_employees()
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
+
     def add_employee(self):
         name = self.name_entry.get()
         age = self.age_entry.get()
@@ -89,6 +89,7 @@ class EmployeeApp(tk.Frame):
             messagebox.showwarning("Cảnh Báo", "Tuổi và lương phải là số dương!")
         else:
             self.employee_list.add_employee(name, age, department, position, salary)
+            self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
             self.update_treeview()
             self.clear_entries()
 
@@ -111,6 +112,7 @@ class EmployeeApp(tk.Frame):
                 messagebox.showwarning("Cảnh Báo", "Tuổi và lương phải là số dương!")
             else:
                 self.employee_list.update_employee(index, name, age, department, position, salary)
+                self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
                 self.update_treeview()
                 self.clear_entries()
         else:
@@ -122,6 +124,7 @@ class EmployeeApp(tk.Frame):
         if selected_item:
             index = self.tree.index(selected_item)
             self.employee_list.delete_employee(index)
+            self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi xóa
             self.update_treeview()
             self.clear_entries()
         else:
@@ -201,4 +204,16 @@ class EmployeeApp(tk.Frame):
 
         # Thêm các nhân viên vào Treeview
         for emp in employees:
+            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
+    def load_and_display_employees(self):
+        self.employee_list.load_from_csv()  # Tải dữ liệu từ CSV
+        self.display_employees()  # Hiển thị dữ liệu trong Treeview
+
+    def display_employees(self):
+        # Xóa dữ liệu cũ trong Treeview
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+
+        # Thêm nhân viên vào Treeview
+        for emp in self.employee_list.get_employees():
             self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
