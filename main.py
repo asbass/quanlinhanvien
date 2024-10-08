@@ -7,13 +7,12 @@ class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Quản Lý Nhân Viên và Phòng Ban")
-        self.geometry("800x600")
+        self.geometry("1300x800")
 
         # Tạo tab control
         self.tab_control = ttk.Notebook(self)
-        self.employee_tab = EmployeeApp(self.tab_control)
         self.department_tab = DepartmentApp(self.tab_control)
-
+        self.employee_tab = EmployeeApp(self.tab_control)
         self.tab_control.add(self.employee_tab, text="Nhân Viên")
         self.tab_control.add(self.department_tab, text="Phòng Ban")
         self.tab_control.pack(expand=1, fill="both")
