@@ -5,13 +5,17 @@ class EmployeeList:
     def __init__(self, filename='employees.csv'):
         self.filename = filename
         self.employees = []
-        self.load_from_csv()  # Tải danh sách nhân viên từ tệp CSV khi khởi tạo
+        self.load_Employee()  # Tải danh sách nhân viên từ tệp CSV khi khởi tạo
+        self.departments = []  # Khởi tạo danh sách phòng ban
+        self.department_id = []  # Khởi tạo danh sách ID phòng ban
 
     def add_employee(self, name, age, department, position, salary):
         new_employee = Employee(name, age, department, position, salary)
         self.employees.append(new_employee)
         self.save_to_csv()  # Lưu vào tệp CSV mỗi khi thêm nhân viên
-
+    def get_employee_names(self):
+        """Trả về danh sách tên nhân viên."""
+        return [employee.name for employee in self.employees]
     def update_employee(self, index, name, age, department, position, salary):
         if 0 <= index < len(self.employees):
             self.employees[index].name = name
@@ -37,7 +41,7 @@ class EmployeeList:
                 writer.writerow([emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary])  # Dữ liệu nhân viên
 
 
-    def load_from_csv(self):
+    def load_Employee(self):
         print("Đang tải danh sách nhân viên từ tệp CSV...")  # Thông báo
         try:
             with open(self.filename, mode="r", encoding='utf-8') as file:
@@ -46,7 +50,6 @@ class EmployeeList:
                     emp = Employee(row['Tên'], row['Tuổi'], row['Phòng Ban'], row['Vị Trí'], row['Lương'])
                     self.employees.append(emp)
                 print("Đã tải thành công danh sách nhân viên.")  # Thông báo tải thành công
-                self.display_employees()
         except FileNotFoundError:
             print("Tệp không tồn tại, không làm gì cả.")  # Thông báo nếu tệp không tồn tại
         except KeyError as e:

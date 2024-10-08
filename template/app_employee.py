@@ -2,11 +2,12 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from enity.employee import Employee
 from service.employee_list import EmployeeList
-
+from service.department_list import departmentList
 class EmployeeApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.employee_list = EmployeeList()
+        self.department_list = departmentList()
         # Khung nhập liệu
         self.frame = tk.Frame(self)
         self.frame.pack(pady=10)
@@ -19,12 +20,15 @@ class EmployeeApp(tk.Frame):
         tk.Label(self.frame, text="Tuổi:").grid(row=0, column=2, padx=5, pady=5)
         self.age_entry = tk.Entry(self.frame)
         self.age_entry.grid(row=0, column=3, padx=5, pady=5)
-
+        
+        
         tk.Label(self.frame, text="Phòng Ban:").grid(row=1, column=0, padx=5, pady=5)
-        self.department_entry = tk.Entry(self.frame)
-        self.department_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.department_combobox = ttk.Combobox(self.frame, state="readonly")
+        self.department_combobox.grid(row=1, column=1, padx=5, pady=5)
+        self.department_combobox.set("Chọn Phòng Ban") 
+        self.load_Department_names()
 
-        tk.Label(self.frame, text="Vị Trí:").grid(row=1, column=2, padx=5, pady=5)
+        tk.Label(self.frame, text="Chức vụ:").grid(row=1, column=2, padx=5, pady=5)
         self.position_entry = tk.Entry(self.frame)
         self.position_entry.grid(row=1, column=3, padx=5, pady=5)
 
@@ -60,13 +64,13 @@ class EmployeeApp(tk.Frame):
         self.reset_button = tk.Button(search_frame, text="Làm Mới", command=self.update_treeview)
         self.reset_button.pack(side=tk.LEFT, padx=5)
         # Cây để hiển thị nhân viên
-        self.tree = ttk.Treeview(self, columns=("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"), show="headings")
+        self.tree = ttk.Treeview(self, columns=("ID", "Tên", "Tuổi", "Phòng Ban", "Chức vụ", "Lương"), show="headings")
         self.tree.pack(pady=10)
 
         # Biến để lưu trạng thái sắp xếp
-        self.sort_reverse = {col: False for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương")}
+        self.sort_reverse = {col: False for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Chức vụ", "Lương")}
 
-        for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"):
+        for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Chức vụ", "Lương"):
             # Thêm sự kiện sắp xếp khi nhấp vào tiêu đề cột
             self.tree.heading(col, text=col, command=lambda _col=col: self.sort_column(_col, self.sort_reverse[_col]))
             self.tree.column(col, anchor="center")  # Căn giữa nội dung cột
@@ -76,12 +80,12 @@ class EmployeeApp(tk.Frame):
     def add_employee(self):
         name = self.name_entry.get()
         age = self.age_entry.get()
-        department = self.department_entry.get()
+        department = self.department_combobox.get()
         position = self.position_entry.get()
         salary = self.salary_entry.get()
 
         # Kiểm tra điều kiện nhập liệu
-        if not name or not age or not department or not position or not salary:
+        if not name or not age or department == "Chọn Phòng Ban" or not position or not salary:
             messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
         elif int(age) < 18 or int(age) > 60:
             messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
@@ -92,6 +96,7 @@ class EmployeeApp(tk.Frame):
             self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
             self.update_treeview()
             self.clear_entries()
+        
 
     def update_employee(self):
         selected_item = self.tree.selection()
@@ -99,7 +104,7 @@ class EmployeeApp(tk.Frame):
             index = self.tree.index(selected_item)
             name = self.name_entry.get()
             age = self.age_entry.get()
-            department = self.department_entry.get()
+            department = self.department_combobox.get()
             position = self.position_entry.get()
             salary = self.salary_entry.get()
 
@@ -118,7 +123,10 @@ class EmployeeApp(tk.Frame):
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để sửa!")
 
-
+    def load_Department_names(self):
+        
+        Department_names = self.department_list.get_department_names()  # Giả sử có phương thức này
+        self.department_combobox['values'] = Department_names
     def delete_employee(self):
         selected_item = self.tree.selection()
         if selected_item:
@@ -140,8 +148,7 @@ class EmployeeApp(tk.Frame):
             self.name_entry.insert(0, employee.name)
             self.age_entry.delete(0, tk.END)
             self.age_entry.insert(0, employee.age)
-            self.department_entry.delete(0, tk.END)
-            self.department_entry.insert(0, employee.department)
+            self.department_combobox.set(employee.department)  # Sửa ở đây
             self.position_entry.delete(0, tk.END)
             self.position_entry.insert(0, employee.position)
             self.salary_entry.delete(0, tk.END)
@@ -149,7 +156,7 @@ class EmployeeApp(tk.Frame):
     def clear_entries(self):
         self.name_entry.delete(0, tk.END)
         self.age_entry.delete(0, tk.END)
-        self.department_entry.delete(0, tk.END)
+        self.department_combobox.set("Chọn Phòng Ban")
         self.position_entry.delete(0, tk.END)
         self.salary_entry.delete(0, tk.END)
     def search_employee(self):
@@ -183,7 +190,7 @@ class EmployeeApp(tk.Frame):
             employees.sort(key=lambda emp: emp.age, reverse=reverse)
         elif col == "Phòng Ban":
             employees.sort(key=lambda emp: emp.department.lower(), reverse=reverse)
-        elif col == "Vị Trí":
+        elif col == "Chức vụ":
             employees.sort(key=lambda emp: emp.position.lower(), reverse=reverse)
         elif col == "Lương":
             employees.sort(key=lambda emp: emp.salary, reverse=reverse)
@@ -204,9 +211,8 @@ class EmployeeApp(tk.Frame):
 
         # Thêm các nhân viên vào Treeview
         for emp in employees:
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))  
-        self.display_employees()  # Hiển thị dữ liệu trong Treeview
-
+            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
+  
     def display_employees(self):
         # Xóa dữ liệu cũ trong Treeview
         for row in self.tree.get_children():
