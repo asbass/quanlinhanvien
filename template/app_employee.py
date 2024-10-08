@@ -70,7 +70,7 @@ class EmployeeApp(tk.Frame):
             # Thêm sự kiện sắp xếp khi nhấp vào tiêu đề cột
             self.tree.heading(col, text=col, command=lambda _col=col: self.sort_column(_col, self.sort_reverse[_col]))
             self.tree.column(col, anchor="center")  # Căn giữa nội dung cột
-        self.load_and_display_employees()
+        self.display_employees()
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
 
     def add_employee(self):
@@ -204,9 +204,7 @@ class EmployeeApp(tk.Frame):
 
         # Thêm các nhân viên vào Treeview
         for emp in employees:
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
-    def load_and_display_employees(self):
-        self.employee_list.load_from_csv()  # Tải dữ liệu từ CSV
+            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))  
         self.display_employees()  # Hiển thị dữ liệu trong Treeview
 
     def display_employees(self):

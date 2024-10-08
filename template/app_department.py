@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 from enity.department import Department
-from service.department_list import DepartmentList
+from service.department_list import departmentList
 
 class DepartmentApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-        self.department_list = DepartmentList()
+        self.department_list = departmentList()
 
         # Khung nhập liệu
         self.frame = tk.Frame(self)
@@ -38,13 +38,14 @@ class DepartmentApp(tk.Frame):
         self.tree.pack(pady=10)
         self.tree.heading("Mã PB", text="Mã PB")
         self.tree.heading("Tên PB", text="Tên PB")
-
+        self.display_department()
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
 
     def add_department(self):
         name = self.name_entry.get()
         if name:
             self.department_list.add_department(name)
+            self.department_list.save_to_csv()
             self.update_treeview()
             self.clear_entries()
         else:
@@ -57,6 +58,7 @@ class DepartmentApp(tk.Frame):
             name = self.name_entry.get()
             if name:
                 self.department_list.update_department(index, name)
+                self.department_list.save_to_csv()
                 self.update_treeview()
                 self.clear_entries()
             else:
@@ -68,7 +70,8 @@ class DepartmentApp(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             index = self.tree.index(selected_item)
-            self.department_list.delete_department(index)
+            self.department_list.del_department(index)
+            self.department_list.save_to_csv()
             self.update_treeview()
             self.clear_entries()
         else:
@@ -78,15 +81,20 @@ class DepartmentApp(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             index = self.tree.index(selected_item)
-            department = self.department_list.get_departments()[index]
+            department = self.department_list.get_department()[index]
             self.name_entry.delete(0, tk.END)
             self.name_entry.insert(0, department.name)
 
     def update_treeview(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
-        for dept in self.department_list.get_departments():
+        for dept in self.department_list.get_department():
             self.tree.insert("", "end", values=(dept.dept_id, dept.name))
 
     def clear_entries(self):
         self.name_entry.delete(0, tk.END)
+    def display_department(self):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        for dept in self.department_list.get_department():
+            self.tree.insert("","end", values=(dept.dept_id, dept.name))
