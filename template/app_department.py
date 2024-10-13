@@ -56,6 +56,8 @@ class DepartmentApp(tk.Frame):
             self.department_list.save_to_csv()
             self.update_treeview()
             self.clear_entries()
+            if hasattr(self.master.master, 'update_department_list_in_employee_app'):
+                self.master.master.update_department_list_in_employee_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng nhập tên phòng ban!")
     def update_department(self):
@@ -69,6 +71,8 @@ class DepartmentApp(tk.Frame):
                 self.department_list.save_to_csv()
                 self.update_treeview()
                 self.clear_entries()
+                if hasattr(self.master.master, 'update_department_list_in_employee_app'):
+                    self.master.master.update_department_list_in_employee_app()
             else:
                 messagebox.showwarning("Cảnh Báo", "Vui lòng nhập tên phòng ban!")
         else:
@@ -82,10 +86,12 @@ class DepartmentApp(tk.Frame):
             self.department_list.save_to_csv()
             self.update_treeview()
             self.clear_entries()
+            if hasattr(self.master.master, 'update_department_list_in_employee_app'):
+                self.master.master.update_department_list_in_employee_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn phòng ban để xóa!")
+    
     def load_employee_names(self):
-        
         employee_names = self.employee_list.get_employee_names() 
         self.manager_combobox['values'] = employee_names
     def on_tree_select(self, event):
@@ -110,4 +116,6 @@ class DepartmentApp(tk.Frame):
             self.tree.delete(row)
         for dept in self.department_list.get_department():
             self.tree.insert("", "end", values=(dept.dept_id, dept.name, dept.positions))
-
+    def update_employee_list(self, employee_list):
+        self.manager_combobox['values'] = [emp.name for emp in employee_list]
+        print("Danh sách nhân viên đã được cập nhật.")
