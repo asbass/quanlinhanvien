@@ -39,7 +39,13 @@ class EmployeeList:
     
     def get_employees(self):
         return self.employees
-
+    
+    def get_employee_names(self):
+        return [employee.name for employee in self.employees]
+    
+    def get_employee_by_id(self, emp_id):
+        return any(emp["emp_id"] == emp_id for emp in self.employees)
+    
     def save_to_csv(self):
         with open(self.filename, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
