@@ -2,11 +2,12 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from enity.employee import Employee
 from service.employee_list import EmployeeList
-
+from service.department_list import departmentList
 class EmployeeApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.employee_list = EmployeeList()
+        self.department_list = departmentList()
         # Khung nhập liệu
         self.frame = tk.Frame(self)
         self.frame.pack(pady=10)
@@ -19,19 +20,17 @@ class EmployeeApp(tk.Frame):
         tk.Label(self.frame, text="Tuổi:").grid(row=0, column=2, padx=5, pady=5)
         self.age_entry = tk.Entry(self.frame)
         self.age_entry.grid(row=0, column=3, padx=5, pady=5)
-
+        
+        
         tk.Label(self.frame, text="Phòng Ban:").grid(row=1, column=0, padx=5, pady=5)
-        self.department_entry = tk.Entry(self.frame)
-        self.department_entry.grid(row=1, column=1, padx=5, pady=5)
-
-        tk.Label(self.frame, text="Vị Trí:").grid(row=1, column=2, padx=5, pady=5)
-        self.position_entry = tk.Entry(self.frame)
-        self.position_entry.grid(row=1, column=3, padx=5, pady=5)
-
-        tk.Label(self.frame, text="Lương:").grid(row=2, column=0, padx=5, pady=5)
-        self.salary_entry = tk.Entry(self.frame)
-        self.salary_entry.grid(row=2, column=1, padx=5, pady=5)
-
+        self.department_combobox = ttk.Combobox(self.frame, state="readonly")
+        self.department_combobox.grid(row=1, column=1, padx=5, pady=5)
+        self.department_combobox.set("Chọn Phòng Ban") 
+        self.load_Department_names()
+        tk.Label(self.frame, text="Chức vụ:").grid(row=1, column=2, padx=5, pady=5)
+        self.position_combobox = ttk.Combobox(self.frame, state="readonly")  # Tạo Combobox
+        self.position_combobox.grid(row=1, column=3, padx=5, pady=5)
+        self.set_position_options()
         # Khung chứa các nút (Thêm, Sửa, Xóa)
         button_frame = tk.Frame(self)
         button_frame.pack(pady=10)
@@ -60,38 +59,40 @@ class EmployeeApp(tk.Frame):
         self.reset_button = tk.Button(search_frame, text="Làm Mới", command=self.update_treeview)
         self.reset_button.pack(side=tk.LEFT, padx=5)
         # Cây để hiển thị nhân viên
-        self.tree = ttk.Treeview(self, columns=("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"), show="headings")
+        self.tree = ttk.Treeview(self, columns=("ID", "Tên", "Tuổi", "Phòng Ban", "Chức vụ"), show="headings")
         self.tree.pack(pady=10)
 
         # Biến để lưu trạng thái sắp xếp
-        self.sort_reverse = {col: False for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương")}
+        self.sort_reverse = {col: False for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Chức vụ")}
 
-        for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"):
+        for col in ("ID", "Tên", "Tuổi", "Phòng Ban", "Chức vụ"):
             # Thêm sự kiện sắp xếp khi nhấp vào tiêu đề cột
             self.tree.heading(col, text=col, command=lambda _col=col: self.sort_column(_col, self.sort_reverse[_col]))
             self.tree.column(col, anchor="center")  # Căn giữa nội dung cột
-        self.load_and_display_employees()
+        self.display_employees()
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
 
     def add_employee(self):
         name = self.name_entry.get()
         age = self.age_entry.get()
-        department = self.department_entry.get()
-        position = self.position_entry.get()
-        salary = self.salary_entry.get()
+        department = self.department_combobox.get()
+        position = self.position_combobox.get()
 
         # Kiểm tra điều kiện nhập liệu
-        if not name or not age or not department or not position or not salary:
+        if not name or not age or department == "Chọn Phòng Ban" or not position :
             messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
         elif int(age) < 18 or int(age) > 60:
             messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
-        elif not age.isdigit() or not salary.isdigit() or int(age) <= 0 or int(salary) <= 0:
+        elif not age.isdigit()  or int(age) <= 0:
             messagebox.showwarning("Cảnh Báo", "Tuổi và lương phải là số dương!")
         else:
-            self.employee_list.add_employee(name, age, department, position, salary)
+            self.employee_list.add_employee(name, age, department, position)
             self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
             self.update_treeview()
             self.clear_entries()
+            if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
+                self.master.master.update_employee_list_in_employee_app()
+        
 
     def update_employee(self):
         selected_item = self.tree.selection()
@@ -99,26 +100,30 @@ class EmployeeApp(tk.Frame):
             index = self.tree.index(selected_item)
             name = self.name_entry.get()
             age = self.age_entry.get()
-            department = self.department_entry.get()
-            position = self.position_entry.get()
-            salary = self.salary_entry.get()
+            department = self.department_combobox.get()
+            position = self.position_combobox.get()
 
             # Kiểm tra điều kiện nhập liệu
-            if not name or not age or not department or not position or not salary:
+            if not name or not age or not department or not position:
                 messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
             elif int(age) < 18 or int(age) > 60:
                 messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
-            elif not age.isdigit() or not salary.isdigit() or int(age) <= 0 or int(salary) <= 0:
-                messagebox.showwarning("Cảnh Báo", "Tuổi và lương phải là số dương!")
+            elif not age.isdigit() or  int(age) <= 0:
+                messagebox.showwarning("Cảnh Báo", "Tuổi phải là số dương!")
             else:
-                self.employee_list.update_employee(index, name, age, department, position, salary)
+                self.employee_list.update_employee(index, name, age, department, position)
                 self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
                 self.update_treeview()
                 self.clear_entries()
+                if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
+                    self.master.master.update_employee_list_in_employee_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để sửa!")
 
-
+    def load_Department_names(self):
+        
+       Department_names = self.department_list.get_department_names()  # Giả sử có phương thức này
+       self.department_combobox['values'] = Department_names
     def delete_employee(self):
         selected_item = self.tree.selection()
         if selected_item:
@@ -127,6 +132,8 @@ class EmployeeApp(tk.Frame):
             self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi xóa
             self.update_treeview()
             self.clear_entries()
+            if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
+                self.master.master.update_employee_list_in_employee_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để xóa!")
 
@@ -140,18 +147,15 @@ class EmployeeApp(tk.Frame):
             self.name_entry.insert(0, employee.name)
             self.age_entry.delete(0, tk.END)
             self.age_entry.insert(0, employee.age)
-            self.department_entry.delete(0, tk.END)
-            self.department_entry.insert(0, employee.department)
-            self.position_entry.delete(0, tk.END)
-            self.position_entry.insert(0, employee.position)
-            self.salary_entry.delete(0, tk.END)
-            self.salary_entry.insert(0, employee.salary)
+            self.department_combobox.set(employee.department)  # Sửa ở đây
+            self.position_combobox.delete(0, tk.END)
+            self.position_combobox.insert(0, employee.position)
+
     def clear_entries(self):
         self.name_entry.delete(0, tk.END)
         self.age_entry.delete(0, tk.END)
-        self.department_entry.delete(0, tk.END)
-        self.position_entry.delete(0, tk.END)
-        self.salary_entry.delete(0, tk.END)
+        self.department_combobox.set("Chọn Phòng Ban")
+        self.position_combobox.delete(0, tk.END)
     def search_employee(self):
         keyword = self.search_entry.get().lower()
         filtered_employees = []
@@ -183,11 +187,8 @@ class EmployeeApp(tk.Frame):
             employees.sort(key=lambda emp: emp.age, reverse=reverse)
         elif col == "Phòng Ban":
             employees.sort(key=lambda emp: emp.department.lower(), reverse=reverse)
-        elif col == "Vị Trí":
+        elif col == "Chức vụ":
             employees.sort(key=lambda emp: emp.position.lower(), reverse=reverse)
-        elif col == "Lương":
-            employees.sort(key=lambda emp: emp.salary, reverse=reverse)
-
         # Cập nhật trạng thái sắp xếp
         self.sort_reverse[col] = not reverse
 
@@ -204,11 +205,8 @@ class EmployeeApp(tk.Frame):
 
         # Thêm các nhân viên vào Treeview
         for emp in employees:
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
-    def load_and_display_employees(self):
-        self.employee_list.load_from_csv()  # Tải dữ liệu từ CSV
-        self.display_employees()  # Hiển thị dữ liệu trong Treeview
-
+            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position))
+  
     def display_employees(self):
         # Xóa dữ liệu cũ trong Treeview
         for row in self.tree.get_children():
@@ -216,4 +214,25 @@ class EmployeeApp(tk.Frame):
 
         # Thêm nhân viên vào Treeview
         for emp in self.employee_list.get_employees():
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position, emp.salary))
+            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position))
+    def update_department_list(self, department_list):
+        self.department_combobox['values'] = [dept.name for dept in department_list]
+        print("Danh sách phòng ban đã được cập nhật.")
+    def load_Department_names(self):
+        
+        Department_names = self.department_list.get_department_names()  # Giả sử có phương thức này
+        self.department_combobox['values'] = Department_names
+    def set_position_options(self):
+        # Cập nhật danh sách các chức vụ ở đây
+        positions = [
+            "Quản lý",
+            "Trưởng phòng",
+            "Nhân viên kế toán",
+            "Kỹ sư",
+            "Nhân viên",
+            "Nhân viên hành chính",
+            "Trợ lý",
+            "Chuyên viên"
+        ]  # Danh sách chức vụ
+        self.position_combobox['values'] = positions
+        self.position_combobox.set(positions[0])
