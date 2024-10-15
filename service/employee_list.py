@@ -44,6 +44,12 @@ class EmployeeList:
             if emp.name == name:
                 return emp
         return None
+
+    def get_employee_names(self):
+        return [employee.name for employee in self.employees]
+    def get_employee_by_id(self, emp_id):
+        return any(emp["emp_id"] == emp_id for emp in self.employees)
+    
     def save_to_csv(self):
         with open(self.filename, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
@@ -80,3 +86,6 @@ class EmployeeList:
                     'Vị Trí': employee.position
                 }
         return None  # Trả về None nếu không tìm thấy nhân viên
+    def clear_employee_list(self):
+            """Xóa tất cả nhân viên trong danh sách."""
+            self.employees.clear()  # Sửa ở đây: sử dụng self.employees thay vì self.employee_list
