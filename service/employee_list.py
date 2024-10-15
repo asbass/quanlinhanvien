@@ -39,7 +39,11 @@ class EmployeeList:
     
     def get_employees(self):
         return self.employees
-
+    def get_employee_by_name(self, name):
+        for emp in self.employees:
+            if emp.name == name:
+                return emp
+        return None
     def save_to_csv(self):
         with open(self.filename, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
@@ -64,13 +68,15 @@ class EmployeeList:
         except Exception as e:
             print(f"Đã xảy ra lỗi: {e}")  # Thông báo lỗi khác
     def get_employee_info(self, name):
-        """Trả về thông tin chi tiết của nhân viên dựa trên tên."""
+        """Trả về thông tin nhân viên theo tên."""
         for employee in self.employees:
-            if employee.name == name:  # So sánh với tên
+            if employee.name == name:
+                # Trả về thông tin dưới dạng dictionary hoặc tuple
                 return {
-                    'emp_id': employee.emp_id,      # Lấy ID
-                    'name': employee.name,          # Lấy tên
-                    'position': employee.position    # Lấy vị trí
+                    'ID': employee.emp_id,
+                    'Tên': employee.name,
+                    'Tuổi': employee.age,
+                    'Phòng Ban': employee.department,
+                    'Vị Trí': employee.position
                 }
-        print(f"Không tìm thấy thông tin cho nhân viên: {name}")  # Thông báo nếu không tìm thấy
-        return None  # Nếu không tìm thấy, trả về None.
+        return None  # Trả về None nếu không tìm thấy nhân viên

@@ -24,25 +24,9 @@ class MainApp(tk.Tk):
         self.employee_tab.update_department_list(department_list)
     def update_employee_list_in_employee_app(self):
         employee_list = self.employee_tab.employee_list.get_employees()  # Truy cập từ department_tab
-        self.department_tab.update_employee_list(employee_list)    
+        self.department_tab.update_employee_list(employee_list)   
+        self.Payroll_tab.update_employee_list(employee_list)
+        self.Payroll_tab.on_employee_selected(employee_list)
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()
-# def on_employee_selected(self, event):
-#         selected_employee_name = self.employee_name_entry.get().strip()
-
-#         # Lấy thông tin nhân viên từ danh sách
-#         employee_info = self.employee_list.get_employee_info(selected_employee_name)
-#         if employee_info:
-#             emp_id = employee_info["ID"]  # Lấy ID từ dictionary
-#             position = employee_info["Vị Trí"]  # Lấy chức vụ từ dictionary
-            
-#             self.id_entry.config(state='normal')
-#             self.id_entry.delete(0, tk.END)
-#             self.id_entry.insert(0, emp_id)  # Điền ID vào trường
-#             self.id_entry.config(state='readonly')
-
-#             self.position_entry.config(state='normal')
-#             self.position_entry.delete(0, tk.END)
-#             self.position_entry.insert(0, position)  # Điền chức vụ vào trường
-#             self.position_entry.config(state='readonly')
