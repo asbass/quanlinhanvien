@@ -8,11 +8,12 @@ class EmployeeList:
         self.load_Employee()  # Tải danh sách nhân viên từ tệp CSV khi khởi tạo
         self.departments = []  # Khởi tạo danh sách phòng ban
         self.department_id = []  # Khởi tạo danh sách ID phòng ban
-
+        print( self.employees)
     def add_employee(self, name, age, department, position):
         new_employee = Employee(name, age, department, position)
         self.employees.append(new_employee)
-        self.save_to_csv()  # Lưu vào tệp CSV mỗi khi thêm nhân viên
+        self.save_to_csv()  # Save to CSV whenever an employee is deleted
+
     def get_employee_names(self):
         """Trả về danh sách tên nhân viên."""
         return [employee.name for employee in self.employees]
@@ -22,7 +23,8 @@ class EmployeeList:
             self.employees[index].age = age
             self.employees[index].department = department
             self.employees[index].position = position
-            self.save_to_csv()  # Lưu vào tệp CSV mỗi khi sửa nhân viên
+        self.save_to_csv()  # Save to CSV whenever an employee is deleted
+
     def get_employee_ids(self):
         # Trả về danh sách ID nhân viên
         return [employee.emp_id for employee in self.employees]
@@ -56,23 +58,36 @@ class EmployeeList:
             writer.writerow(["ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"])  # Tiêu đề
             for emp in self.employees:
                 writer.writerow([emp.emp_id, emp.name, emp.age, emp.department, emp.position])  # Dữ liệu nhân viên
+                print(emp.emp_id)
 
 
     def load_Employee(self):
-        print("Đang tải danh sách nhân viên từ tệp CSV...")  # Thông báo
+        print("Đang tải danh sách nhân viên từ tệp CSV...")
         try:
             with open(self.filename, mode="r", encoding='utf-8') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    emp = Employee(row['Tên'], row['Tuổi'], row['Phòng Ban'], row['Vị Trí'])
+                    emp = Employee(
+                        name=row['Tên'],
+                        age=row['Tuổi'],
+                        department=row['Phòng Ban'],
+                        position=row['Vị Trí']
+                    )
                     self.employees.append(emp)
-                print("Đã tải thành công danh sách nhân viên.")  # Thông báo tải thành công
+                    emp.emp_id = int(row['ID'])  # Đặt ID từ tệp CSV
+
+            if self.employees:
+                Employee._id_counter = max(emp.emp_id for emp in self.employees) + 1
+            else:
+                Employee._id_counter = 1
+            print("Đã tải thành công danh sách nhân viên.")
         except FileNotFoundError:
-            print("Tệp không tồn tại, không làm gì cả.")  # Thông báo nếu tệp không tồn tại
+            print("Tệp không tồn tại, không làm gì cả.")
         except KeyError as e:
-            print(f"KeyError: {e} - Kiểm tra lại tên cột trong tệp CSV.")  # Thông báo lỗi nếu tên cột không đúng
+            print(f"KeyError: {e} - Kiểm tra lại tên cột trong tệp CSV.")
         except Exception as e:
-            print(f"Đã xảy ra lỗi: {e}")  # Thông báo lỗi khác
+            print(f"Đã xảy ra lỗi: {e}")
+
     def get_employee_info(self, name):
         """Trả về thông tin nhân viên theo tên."""
         for employee in self.employees:
