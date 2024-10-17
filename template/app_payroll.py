@@ -5,6 +5,7 @@ from datetime import datetime
 from service.employee_list import EmployeeList  # Đảm bảo đường dẫn này chính xác
 from service.Payroll_list import PayrollList
 from enity.employee import Employee
+from service.woking_time_service import WorkingTimeService
 class PayrollApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -222,11 +223,37 @@ class PayrollApp(tk.Frame):
          # Lấy thông tin nhân viên đã chọn từ combobox hoặc listbox
         selected_employee_name = self.employee_name_entry.get()  # Hoặc sử dụng listbox tùy thuộc vào cách bạn thiết lập giao diện
         # Tìm nhân viên tương ứng trong danh sách nhân viên
-        selected_employee = self.employee_list.get_employee_by_name(selected_employee_name)
+        selected_employee = self.employee_list.get_employee_name(selected_employee_name)
+
         if selected_employee:
             emp_id = selected_employee.emp_id
             position = selected_employee.position
+                # Khởi tạo dịch vụ quản lý ngày làm việc
+            working_time_service = WorkingTimeService()
+            
+            # Lấy danh sách các ngày nghỉ của nhân viên
+            off_days = working_time_service.get_off_days_by_employee(emp_id)
+                    # Lấy thông tin thời gian từ danh sách working_time của nhân viên
+            if off_days:
+                first_off_day = off_days[0]  # Giả sử lấy ngày nghỉ đầu tiên (có thể thay đổi theo yêu cầu)
+                time_value = first_off_day.time  # `time` là thuộc tính trong đối tượng WorkingTime
 
+                # Kiểm tra xem `time` có phải là đối tượng datetime không
+                if isinstance(time_value, datetime):
+                    month = time_value.month
+                    year = time_value.year
+                else:
+                    # Nếu `time` là một chuỗi, chuyển đổi sang đối tượng datetime
+                    time_value = datetime.strptime(time_value, '%Y-%m-%d')  # Giả sử định dạng 'YYYY-MM-DD'
+                    month = time_value.month
+                    year = time_value.year
+
+                # Đổ dữ liệu tháng vào combobox
+                self.month_entry.set(month)  # Thiết lập giá trị tháng
+
+                # Đổ dữ liệu năm vào Entry
+                self.year_entry.delete(0, tk.END)
+                self.year_entry.insert(0, str(year))
             # Tính lương cơ bản dựa trên chức vụ
             salary_factor = self.position_salary_factors.get(position, 1)
             basic_salary = 5000000 * salary_factor  # Lương cơ bản
@@ -257,10 +284,16 @@ class PayrollApp(tk.Frame):
             self.update_employee_list(self.employee_list.get_employees())  
             # Tính lương thực nhận
             self.calculate_salary()  # Gọi lại để cập nhật lương thực nhận
+                # Cập nhật thông tin về số ngày nghỉ của nhân viên
+            num_days_off = len(off_days)
+            self.days_off_entry.config(state='normal')
+            self.days_off_entry.delete(0, tk.END)
+            self.days_off_entry.insert(0, str(num_days_off))  # Đổ dữ liệu số ngày nghỉ
+            self.days_off_entry.config(state='readonly')
 
     def load_employee_list(self):
         """Tải danh sách nhân viên chỉ một lần."""
         if not self.is_employee_list_loaded:
             self.employee_list.clear_employee_list()
-            self.employee_list.load_Employee()
+            self.employee_list.load_employees_from_db()
             self.is_employee_list_loaded = True
