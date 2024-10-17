@@ -44,7 +44,10 @@ class EmployeeList:
         return [employee.name for employee in self.employees]
     
     def get_employee_by_id(self, emp_id):
-        return any(emp["emp_id"] == emp_id for emp in self.employees)
+        for emp in self.employees:
+            if emp.emp_id == emp_id:  # So sánh với thuộc tính emp_id
+                return emp  # Trả về đối tượng Employee
+        return None
     
     def save_to_csv(self):
         with open(self.filename, mode='w', newline='', encoding='utf-8') as file:
@@ -63,6 +66,9 @@ class EmployeeList:
                     emp = Employee(row['Tên'], row['Tuổi'], row['Phòng Ban'], row['Vị Trí'])
                     self.employees.append(emp)
                 print("Đã tải thành công danh sách nhân viên.")  # Thông báo tải thành công
+            
+            for a in self.employees:
+                print(a.emp_id)
         except FileNotFoundError:
             print("Tệp không tồn tại, không làm gì cả.")  # Thông báo nếu tệp không tồn tại
         except KeyError as e:

@@ -78,16 +78,32 @@ class DashboardWokingTime(tk.Frame):
         self.tree.column("total_ot", anchor="center", width=90)
 
         # Tạo dữ liệu mẫu
-        self.load_sample_data()
+        self.load_data()
 
         # Điều chỉnh kích thước cho Treeview
         self.grid_rowconfigure(6, weight=1)
         self.grid_columnconfigure(6, weight=1)
 
-    def load_sample_data(self):
-        # Tạo dữ liệu mẫu
-        for i in range(20):  # Giả sử có 50 hàng dữ liệu
-            values = [f"Nhân viên {i+1}"] + [i % 30 for _ in range(36)]
+    def load_data(self):
+        year = 2024  # Hoặc có thể lấy năm từ một input khác
+        self.tree.delete(*self.tree.get_children())  # Xóa dữ liệu cũ trong Treeview
+        
+        # Gọi phương thức để lấy dữ liệu
+        working_time_data = self.working_time.list_working_time_by_year(year)
+        
+        for employee_id, data in working_time_data.items():
+            # Giả sử employee có các thuộc tính như name và emp_id
+            employee = self.employee_list.get_employee_by_id(employee_id)  
+            
+            # Kiểm tra nếu employee là None
+            if employee is None:
+                print(f"Warning: No employee found with ID {employee_id}.")
+                continue  # Bỏ qua ID này nếu không tìm thấy nhân viên
+            
+            values = [employee.name] + [data["months"][month]["OFF"] for month in range(1, 13)] + \
+                    [data["months"][month]["WFH"] for month in range(1, 13)] + \
+                    [data["months"][month]["OT"] for month in range(1, 13)] + \
+                    [data["total"]["OFF"], data["total"]["WFH"], data["total"]["OT"]]
             self.tree.insert("", "end", values=values)
 
     def get_years(self):

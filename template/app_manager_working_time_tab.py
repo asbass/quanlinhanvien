@@ -2,7 +2,6 @@ import datetime
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-import datetime
 from tkcalendar import Calendar
 import os
 from PIL import Image, ImageTk
@@ -107,6 +106,9 @@ class ManagerWorkingTimeTab(tk.Frame):
         selected_name = self.emp_id_combobox.get()
         selected_index = self.employee_names.index(selected_name)
         self.selected_emp_id.set(self.employee_ids[selected_index])  
+        employees = self.employee_list.get_employees()
+        for employee in employees:
+            print(employee.emp_id)
 
     def add_working_time(self):
         emp_id = self.selected_emp_id.get()
@@ -115,20 +117,21 @@ class ManagerWorkingTimeTab(tk.Frame):
         reason = self.reason_entry.get()
         typeOff = self.typeOff_entry.get()
         typeTime = self.typeTime_entry.get()
-
+        print("Tét")
+        print(emp_id)
         try:
             # Kiểm tra định dạng ngày (dd/mm/yyyy)
             datetime.datetime.strptime(time, "%d/%m/%Y")  
 
             # Thực hiện lưu thông tin vào hệ thống
-            print(f"emp_id: {emp_id},Time: {time}, Status: {status}, Reason: {reason}, Type Off: {typeOff}, Type Time: {typeTime}")
+            # print(f"emp_id: {emp_id},Time: {time}, Status: {status}, Reason: {reason}, Type Off: {typeOff}, Type Time: {typeTime}")
             
             # Giả sử bạn có hàm để xử lý thêm thời gian làm việc:
             self.working_time.add_working_time(emp_id, time, status, reason, typeOff, typeTime)
             self.update_treeview()
             messagebox.showinfo("Thành công", "Thời gian làm việc đã được thêm.")
             self.clear_entries()  # Xóa các ô nhập liệu sau khi thêm
-
+            # self.working_time.list_working_time_by_year(2024)
         except ValueError as e:
             messagebox.showerror("Lỗi", f"Định dạng ngày không hợp lệ: {str(e)}")
 
