@@ -8,11 +8,12 @@ class EmployeeList:
         self.load_Employee()  # Tải danh sách nhân viên từ tệp CSV khi khởi tạo
         self.departments = []  # Khởi tạo danh sách phòng ban
         self.department_id = []  # Khởi tạo danh sách ID phòng ban
-
+        print( self.employees)
     def add_employee(self, name, age, department, position):
         new_employee = Employee(name, age, department, position)
         self.employees.append(new_employee)
-        self.save_to_csv()  # Lưu vào tệp CSV mỗi khi thêm nhân viên
+        self.save_to_csv()  # Save to CSV whenever an employee is deleted
+
     def get_employee_names(self):
         """Trả về danh sách tên nhân viên."""
         return [employee.name for employee in self.employees]
@@ -22,7 +23,8 @@ class EmployeeList:
             self.employees[index].age = age
             self.employees[index].department = department
             self.employees[index].position = position
-            self.save_to_csv()  # Lưu vào tệp CSV mỗi khi sửa nhân viên
+        self.save_to_csv()  # Save to CSV whenever an employee is deleted
+
     def get_employee_ids(self):
         # Trả về danh sách ID nhân viên
         return [employee.emp_id for employee in self.employees]
@@ -39,10 +41,14 @@ class EmployeeList:
     
     def get_employees(self):
         return self.employees
-    
+    def get_employee_by_name(self, name):
+        for emp in self.employees:
+            if emp.name == name:
+                return emp
+        return None
+
     def get_employee_names(self):
         return [employee.name for employee in self.employees]
-    
     def get_employee_by_id(self, emp_id):
         for emp in self.employees:
             if emp.emp_id == emp_id:  # So sánh với thuộc tính emp_id
@@ -55,34 +61,49 @@ class EmployeeList:
             writer.writerow(["ID", "Tên", "Tuổi", "Phòng Ban", "Vị Trí", "Lương"])  # Tiêu đề
             for emp in self.employees:
                 writer.writerow([emp.emp_id, emp.name, emp.age, emp.department, emp.position])  # Dữ liệu nhân viên
+                print(emp.emp_id)
 
 
     def load_Employee(self):
-        print("Đang tải danh sách nhân viên từ tệp CSV...")  # Thông báo
+        print("Đang tải danh sách nhân viên từ tệp CSV...")
         try:
             with open(self.filename, mode="r", encoding='utf-8') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    emp = Employee(row['Tên'], row['Tuổi'], row['Phòng Ban'], row['Vị Trí'])
+                    emp = Employee(
+                        name=row['Tên'],
+                        age=row['Tuổi'],
+                        department=row['Phòng Ban'],
+                        position=row['Vị Trí']
+                    )
                     self.employees.append(emp)
-                print("Đã tải thành công danh sách nhân viên.")  # Thông báo tải thành công
-            
-            for a in self.employees:
-                print(a.emp_id)
+                    emp.emp_id = int(row['ID'])  # Đặt ID từ tệp CSV
+
+            if self.employees:
+                Employee._id_counter = max(emp.emp_id for emp in self.employees) + 1
+            else:
+                Employee._id_counter = 1
+            print("Đã tải thành công danh sách nhân viên.")
         except FileNotFoundError:
-            print("Tệp không tồn tại, không làm gì cả.")  # Thông báo nếu tệp không tồn tại
+            print("Tệp không tồn tại, không làm gì cả.")
         except KeyError as e:
-            print(f"KeyError: {e} - Kiểm tra lại tên cột trong tệp CSV.")  # Thông báo lỗi nếu tên cột không đúng
+            print(f"KeyError: {e} - Kiểm tra lại tên cột trong tệp CSV.")
         except Exception as e:
-            print(f"Đã xảy ra lỗi: {e}")  # Thông báo lỗi khác
+            print(f"Đã xảy ra lỗi: {e}")
+
     def get_employee_info(self, name):
-        """Trả về thông tin chi tiết của nhân viên dựa trên tên."""
+        """Trả về thông tin nhân viên theo tên."""
         for employee in self.employees:
-            if employee.name == name:  # So sánh với tên
+            if employee.name == name:
+                # Trả về thông tin dưới dạng dictionary hoặc tuple
                 return {
-                    'emp_id': employee.emp_id,      # Lấy ID
-                    'name': employee.name,          # Lấy tên
-                    'position': employee.position    # Lấy vị trí
+                    'ID': employee.emp_id,
+                    'Tên': employee.name,
+                    'Tuổi': employee.age,
+                    'Phòng Ban': employee.department,
+                    'Vị Trí': employee.position
                 }
-        print(f"Không tìm thấy thông tin cho nhân viên: {name}")  # Thông báo nếu không tìm thấy
-        return None  # Nếu không tìm thấy, trả về None.
+        return None  # Trả về None nếu không tìm thấy nhân viên
+    def clear_employee_list(self):
+            """Xóa tất cả nhân viên trong danh sách."""
+            self.employees.clear()  # Sửa ở đây: sử dụng self.employees thay vì self.employee_list

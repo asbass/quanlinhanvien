@@ -23,14 +23,15 @@ class PayrollApp(tk.Frame):
             "Trợ lý": 0.9,
             "Chuyên viên": 1.1,
         }
-        
+        self.is_employee_list_loaded = False
+
         # Khung nhập liệu
         self.frame = tk.Frame(self)
         self.frame.pack(pady=10)
 
         # Nhập ID Nhân Viên
         tk.Label(self.frame, text="ID Nhân Viên:").grid(row=0, column=0, padx=5, pady=5)
-        self.id_entry = tk.Entry(self.frame,state='readonly')  # Trường ID có thể chỉnh sửa
+        self.id_entry = tk.Entry(self.frame,state='readonly') 
         self.id_entry.grid(row=0, column=1, padx=5, pady=5)
 
         # Nhập tháng
@@ -67,13 +68,13 @@ class PayrollApp(tk.Frame):
         tk.Label(self.frame, text="Lương Thưởng (VNĐ):").grid(row=6, column=0, padx=5, pady=5)
         self.bonus_salary_entry = tk.Entry(self.frame)  # Trường nhập lương thưởng
         self.bonus_salary_entry.grid(row=6, column=1, padx=5, pady=5)
-        self.bonus_salary_entry.bind("<KeyRelease>", self.calculate_salary)  # Tính lương khi gõ
+        self.bonus_salary_entry.bind("<KeyRelease>", self.on_key_release)  # Tính lương khi gõ
 
         # Nhập số ngày nghỉ
         tk.Label(self.frame, text="Số Ngày Nghỉ:").grid(row=7, column=0, padx=5, pady=5)
         self.days_off_entry = tk.Entry(self.frame)
         self.days_off_entry.grid(row=7, column=1, padx=5, pady=5)
-        self.days_off_entry.bind("<KeyRelease>", self.calculate_salary)  # Tính lương khi gõ
+        self.days_off_entry.bind("<KeyRelease>", self.on_key_release)  # Tính lương khi gõ
 
         # Nhập lương thực nhận
         tk.Label(self.frame, text="Lương Thực Nhận (VNĐ):").grid(row=8, column=0, padx=5, pady=5)
@@ -124,6 +125,7 @@ class PayrollApp(tk.Frame):
 
             # Tính lương thực nhận
             net_salary = (basic_salary + bonus_salary) - (days_off * (basic_salary / 30))
+            net_salary = round(net_salary)
             self.net_salary_entry.config(state='normal')  # Cho phép chỉnh sửa lương thực nhận
             self.net_salary_entry.delete(0, tk.END)
             self.net_salary_entry.insert(0, f"{max(net_salary, 0):,} VND")  # Đảm bảo lương không âm và định dạng
@@ -152,7 +154,7 @@ class PayrollApp(tk.Frame):
                 return  # Ngừng thêm bảng lương nếu đã tồn tại
 
         # Thêm bảng lương vào Treeview
-        self.tree.insert("", "end", values=(employee_id, month, year, employee_name, position, basic_salary, bonus_salary, days_off, net_salary))
+        self.tree.insert("", "end", values=(employee_id, employee_name, position, month, year, basic_salary, bonus_salary, days_off, net_salary))
 
         # Chuyển đổi các giá trị cần thiết cho việc thêm vào payroll_list
         try:
@@ -189,7 +191,15 @@ class PayrollApp(tk.Frame):
         
         # Xóa các trường nhập liệu
         self.clear_entries()
-
+    def update_employee_position(self):
+        self.is_employee_list_loaded = False
+        self.load_employee_list()
+    def update_employee_list(self, employee_list):
+        self.employee_name_entry['values'] = [emp.name for emp in employee_list]
+        print("Danh sách nhân viên đã được cập nhật.")
+    def on_key_release(self, event):
+        if self.days_off_entry.get().isdigit() or self.bonus_salary_entry.get().isdigit():
+            self.calculate_salary()
     def clear_entries(self):
         """Xóa các trường nhập liệu."""
         self.id_entry.delete(0, tk.END)
@@ -201,20 +211,21 @@ class PayrollApp(tk.Frame):
         self.days_off_entry.delete(0, tk.END)  # Xóa trường số ngày nghỉ
 
         # Đặt giá trị mới cho các trường nhập liệu
-        self.bonus_salary_entry.insert(0, "1.000.000 VND")  # Đặt lương thưởng là 1 triệu
+        self.bonus_salary_entry.insert(0, "1,000,000 VND")  # Đặt lương thưởng là 1 triệu
         self.days_off_entry.insert(0, "0")  # Đặt số ngày nghỉ là 0
         self.net_salary_entry.delete(0, tk.END)
         self.month_entry.set('1')  # Đặt lại tháng về mặc định
         self.year_entry.delete(0, tk.END)
         self.year_entry.insert(0, str(datetime.now().year))  # Đặt lại năm hiện tại
-    def on_employee_selected(self, event):
-        selected_employee_name = self.employee_name_entry.get().strip()
 
-        # Lấy thông tin nhân viên từ danh sách
-        employee_info = self.employee_list.get_employee_info(selected_employee_name)
-        if employee_info:
-            emp_id = employee_info["emp_id"]
-            position = employee_info["position"]
+    def on_employee_selected(self, event):
+         # Lấy thông tin nhân viên đã chọn từ combobox hoặc listbox
+        selected_employee_name = self.employee_name_entry.get()  # Hoặc sử dụng listbox tùy thuộc vào cách bạn thiết lập giao diện
+        # Tìm nhân viên tương ứng trong danh sách nhân viên
+        selected_employee = self.employee_list.get_employee_by_name(selected_employee_name)
+        if selected_employee:
+            emp_id = selected_employee.emp_id
+            position = selected_employee.position
 
             # Tính lương cơ bản dựa trên chức vụ
             salary_factor = self.position_salary_factors.get(position, 1)
@@ -243,6 +254,13 @@ class PayrollApp(tk.Frame):
             self.bonus_salary_entry.delete(0, tk.END)
             self.bonus_salary_entry.insert(0, f"{bonus_salary:,} VND")
             self.bonus_salary_entry.config(state='normal')
-
+            self.update_employee_list(self.employee_list.get_employees())  
             # Tính lương thực nhận
             self.calculate_salary()  # Gọi lại để cập nhật lương thực nhận
+
+    def load_employee_list(self):
+        """Tải danh sách nhân viên chỉ một lần."""
+        if not self.is_employee_list_loaded:
+            self.employee_list.clear_employee_list()
+            self.employee_list.load_Employee()
+            self.is_employee_list_loaded = True
