@@ -17,11 +17,7 @@ class DepartmentApp(tk.Frame):
         tk.Label(self.frame, text="Tên Phòng Ban:").grid(row=0, column=0, padx=5, pady=5)
         self.name_entry = tk.Entry(self.frame)
         self.name_entry.grid(row=0, column=1, padx=5, pady=5)
-        
-        tk.Label(self.frame, text="Trưởng Phòng:").grid(row=1, column=0, padx=5, pady=5)
-        self.manager_combobox = ttk.Combobox(self.frame, state="readonly")  # Tạo ComboBox
-        self.manager_combobox.grid(row=1, column=1, padx=5, pady=5)
-        self.load_employee_names()  # Gọi phương thức để tải tên nhân viên vào ComboBox
+
         # Khung chứa các nút (Thêm, Sửa, Xóa)
         button_frame = tk.Frame(self)
         button_frame.pack(pady=10)
@@ -39,83 +35,75 @@ class DepartmentApp(tk.Frame):
         self.delete_button.grid(row=0, column=2, padx=10)
 
         # Cây để hiển thị phòng ban
-        self.tree = ttk.Treeview(self, columns=("Mã PB", "Tên PB", "Trưởng Phòng"), show="headings")
+        self.tree = ttk.Treeview(self, columns=("Mã PB", "Tên PB"), show="headings")
         self.tree.pack(pady=10)
         self.tree.heading("Mã PB", text="Mã PB")
         self.tree.heading("Tên PB", text="Tên PB")
-        self.tree.heading("Trưởng Phòng", text="Trưởng Phòng")
         self.display_department()
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
 
     def add_department(self):
         name = self.name_entry.get()
-        positions = self.manager_combobox.get()
         if name:
             
-            self.department_list.add_department(name,positions)
-            self.department_list.save_to_csv()
+            self.department_list.add_department(name)
             self.update_treeview()
             self.clear_entries()
-            if hasattr(self.master.master, 'update_department_list_in_employee_app'):
-                self.master.master.update_department_list_in_employee_app()
+            # if hasattr(self.master.master, 'update_department_list_in_employee_app'):
+            #     self.master.master.update_department_list_in_employee_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng nhập tên phòng ban!")
     def update_department(self):
         selected_item = self.tree.selection()
         if selected_item:
-            index = self.tree.index(selected_item)
+            dept_id = self.tree.item(selected_item)["values"][0]  # Lấy mã phòng ban
             name = self.name_entry.get()
-            positions = self.manager_combobox.get()
             if name:
-                self.department_list.update_department(index, name,positions)
-                self.department_list.save_to_csv()
+                self.department_list.update_department(dept_id, name)  # Sử dụng dept_id
                 self.update_treeview()
                 self.clear_entries()
-                if hasattr(self.master.master, 'update_department_list_in_employee_app'):
-                    self.master.master.update_department_list_in_employee_app()
             else:
                 messagebox.showwarning("Cảnh Báo", "Vui lòng nhập tên phòng ban!")
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn phòng ban để sửa!")
-
     def delete_department(self):
         selected_item = self.tree.selection()
         if selected_item:
-            index = self.tree.index(selected_item)
-            self.department_list.del_department(index)
-            self.department_list.save_to_csv()
+            dept_id = self.tree.item(selected_item)["values"][0]  # Lấy mã phòng ban
+            self.department_list.del_department(dept_id)
             self.update_treeview()
             self.clear_entries()
-            if hasattr(self.master.master, 'update_department_list_in_employee_app'):
-                self.master.master.update_department_list_in_employee_app()
+            # if hasattr(self.master.master, 'update_department_list_in_employee_app'):
+            #     self.master.master.update_department_list_in_employee_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn phòng ban để xóa!")
-    
-    def load_employee_names(self):
-        employee_names = self.employee_list.get_employee_names() 
-        self.manager_combobox['values'] = employee_names
     def on_tree_select(self, event):
         selected_item = self.tree.selection()
         if selected_item:
-            index = self.tree.index(selected_item)
-            department = self.department_list.get_department()[index]
-            self.name_entry.delete(0, tk.END)
-            self.name_entry.insert(0, department.name)
-            self.manager_combobox.set(department.positions)
+            # Lấy mã phòng ban từ giá trị đầu tiên trong selected_item
+            dept_id = self.tree.item(selected_item)["values"][0]  # Lấy mã phòng ban
+
+            # Tìm phòng ban trong danh sách dựa trên dept_id
+            departments = self.department_list.get_departments()
+            department = next((dept for dept in departments if str(dept['dept_id']) == dept_id), None)
+
+            if department:
+                self.name_entry.delete(0, tk.END)
+                self.name_entry.insert(0, department['name'])
+            else:
+                print(f"Department with ID {dept_id} not found.")
     def update_treeview(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
-        for dept in self.department_list.get_department():
-            self.tree.insert("", "end", values=(dept.dept_id, dept.name, dept.positions))
+        for dept in self.department_list.get_departments():
+            self.tree.insert("", "end", values=(dept['dept_id'], dept['name']))
 
     def clear_entries(self):
         self.name_entry.delete(0, tk.END)
-        self.manager_combobox.set('') 
     def display_department(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
-        for dept in self.department_list.get_department():
-            self.tree.insert("", "end", values=(dept.dept_id, dept.name, dept.positions))
-    def update_employee_list(self, employee_list):
-        self.manager_combobox['values'] = [emp.name for emp in employee_list]
-        print("Danh sách nhân viên đã được cập nhật.")
+        for dept in self.department_list.get_departments():
+            self.tree.insert("", "end", values=(dept['dept_id'], dept['name']))
+    def close_connection(self):
+        self.department_list.close_connection()  # Đóng kết nối từ departmentList

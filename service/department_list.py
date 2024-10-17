@@ -1,47 +1,70 @@
-import csv
-from enity.department import Department
+from enity.department import Department  # Chắc chắn rằng đường dẫn nhập đúng
+from mysql.connector import Error
+from service.connect_sql import DatabaseConnection
 
-class departmentList:
-    def __init__(self, filename='department.csv'):
-        self.filename = filename
-        self.department = []
-        self.load_departments()
-        
-    def add_department(self, name,positions):
-        new_department = Department(name,positions)
-        self.department.append(new_department)
-        self.save_to_csv()
-    def update_department(self, index, name,positions):
-        if 0 <=index < len(self.department):
-            self.department[index].name = name
-            self.department[index].positions = positions
-        self.save_to_csv()
-    def del_department(self, index):
-        if 0 <= index < len(self.department):
-            del self.department[index]
-        self.save_to_csv()
-    def get_department(self):
-        return self.department
-    def get_department_names(self):
-        return [department.name for department in self.department]
-    def save_to_csv(self):
-        with open(self.filename, mode='w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(["ID","Tên","Trưởng phòng"])
-            for dep in self.department:
-                writer.writerow([dep.dept_id, dep.name,dep.positions])
-    def load_departments(self):
-        print("Đang tải")
+class departmentList:  # Đặt tên lớp với chữ cái đầu viết hoa theo quy tắc PEP 8
+    def __init__(self):
+        self.db = DatabaseConnection()  # Khởi tạo kết nối với cơ sở dữ liệu
+        self.db.connect()  # Kết nối đến cơ sở dữ liệu
+            
+    def add_department(self, name):
         try:
-            with open(self.filename, mode="r", encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    dep = Department(row['Tên'], row['Trưởng phòng'])
-                    self.department.append(dep)
-                print('Thành Công')
-        except FileNotFoundError:
-            print("Không Tìm Thấy File")
-        except KeyError as e:
-            print(f"keyError: {e} - Kiểm tra tên cột")
-        except Exception as e:
-            print(f"error: {e}")
+            # Tạo một đối tượng Department mới
+            new_department = Department(name)
+            
+            # Thêm phòng ban vào cơ sở dữ liệu
+            query = "INSERT INTO Department (dept_id, name) VALUES (%s, %s)"
+            self.db.execute_query(query, (str(new_department.dept_id), new_department.name))
+        except Error as e:
+            print(f"Error: '{e}' occurred while adding department")
+    def get_department_name(self, department_id):
+        query = "SELECT name FROM Department WHERE dept_id = ?"
+        self.db.execute_query(query, (department_id,))
+        print(department_id)
+    def update_department(self, department_id, name):
+        try:
+            # Cập nhật thông tin phòng ban
+            query = "UPDATE Department SET name = %s WHERE dept_id = %s"  # Sửa lỗi cú pháp SQL
+            self.db.execute_query(query, (name, department_id))
+        except Error as e:
+            print(f"Error: '{e}' occurred while updating department")
+
+    def del_department(self, department_id):
+        try:
+            # Xóa phòng ban khỏi cơ sở dữ liệu
+            query = "DELETE FROM Department WHERE dept_id = %s"  # Sửa tên trường cho phù hợp
+            self.db.execute_query(query, (department_id,))
+        except Error as e:
+            print(f"Error: '{e}' occurred while deleting department")
+
+    def get_departments(self):
+        # Lấy danh sách các phòng ban
+        query = "SELECT * FROM Department"
+        return self.db.fetch_all(query)
+    def get_department_by_id(self, dept_id):
+        query = "SELECT * FROM Department WHERE dept_id = %s"
+        return self.fetch_one(query, (dept_id,))
+
+    def get_department_names(self):
+            departments = self.get_departments()
+            return [department['name'] for department in departments if 'name' in department]  # Safety check for 'name'
+
+    # Other methods...
+
+    def close_connection(self):
+        self.db.close_connection()  # Đóng kết nối khi không còn sử dụng
+
+    def load_departments(self):
+        print("Loading departments from database...")
+        try:
+            # Lấy danh sách các phòng ban từ cơ sở dữ liệu
+            query = "SELECT * FROM Department"
+            departments = self.db.fetch_all(query)
+
+            # In thông tin phòng ban
+            for department in departments:
+                print(f"Department ID: {department['dept_id']}, Name: {department['name']}")  # Sửa tên trường cho phù hợp
+
+            print('Departments loaded successfully')
+        except Error as e:
+            print(f"Error: '{e}' occurred while loading departments")

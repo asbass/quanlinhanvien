@@ -67,5 +67,4 @@ class PayrollList:
         # Thêm bảng lương mới vào danh sách
         self.Payroll.append(new_payroll)
         self.save_to_csv()  # Gọi phương thức lưu vào file
-        print("Bảng lương mới đã được thêm thành công!")\
-       
+        print("Bảng lương mới đã được thêm thành công!")
