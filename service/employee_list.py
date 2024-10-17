@@ -10,7 +10,7 @@ class EmployeeList:
         self.load_employees_from_db()
         self.departments = []  # Khởi tạo danh sách phòng ban
         self.department_id = []  # Khởi tạo danh sách ID phòng ban
-
+        print( self.employees)
     def add_employee(self, name, age, department, position):
         # Tìm department_id và position_id từ tên phòng ban và chức vụ
         department_query = "SELECT dept_id FROM Department WHERE name = %s"
@@ -25,7 +25,7 @@ class EmployeeList:
         # Thêm nhân viên mới vào danh sách
         new_employee = Employee(name, age, department_id, position_id)
         self.employees.append(new_employee)
-
+        
         # Thêm vào cơ sở dữ liệu
         query = """
             INSERT INTO Employee (emp_id, name, age, department_id, position_id) 
@@ -67,6 +67,7 @@ class EmployeeList:
             print(f"Employee {emp_id_str} updated successfully.")
         except Exception as e:
             print("Error updating employee:", e)
+
     def get_employee_ids(self):
         """Retrieve employee IDs from the database."""
         query = "SELECT emp_id FROM Employee"
@@ -155,11 +156,8 @@ class EmployeeList:
         result = self.db.fetch_one(query, (department_name,))
         return result['dept_id'] if result else None
     def get_employee_names(self):
-        """Retrieve all employee names from the database."""
         query = "SELECT name FROM Employee"  # Query to fetch employee names
         results = self.db.fetch_all(query)  # Fetch all records
-
-        # Extract names from the result
         return [row['name'] for row in results] if results else []
     def get_position_id_by_name(self, position_name):
         query = "SELECT position_id FROM Positions WHERE name = %s"
@@ -177,3 +175,4 @@ class EmployeeList:
         else:
             print("Không tìm thấy nhân viên với tên:", name)
             return None  # Trả về None nếu không tìm thấy
+
