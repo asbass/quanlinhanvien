@@ -34,6 +34,7 @@ class PayrollApp(tk.Frame):
         tk.Label(self.frame, text="Tháng:").grid(row=1, column=0, padx=5, pady=5)
         self.month_entry = ttk.Combobox(self.frame, values=[i for i in range(1, 13)], state="readonly")
         self.month_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.month_entry.bind("<<ComboboxSelected>>", self.on_employee_selected)
         self.month_entry.current(0)  # Chọn tháng 1 (chỉ số 0 trong danh sách)
         # Nhập năm
         tk.Label(self.frame, text="Năm:").grid(row=2, column=0, padx=5, pady=5)
