@@ -1,6 +1,5 @@
 from service.connect_sql import DatabaseConnection
 from enity.employee import Employee
-
 class EmployeeList:
     def __init__(self):
         self.db = DatabaseConnection()
@@ -71,9 +70,13 @@ class EmployeeList:
         """Retrieve employee IDs from the database."""
         query = "SELECT emp_id FROM Employee"
         results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
-
         # Extract IDs from the results
         return [result['emp_id'] for result in results]
+    def get_employee_name(self):
+        query = "SELECT name FROM Employee"
+        results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
+        # Extract IDs from the results
+        return [result['name'] for result in results]
     def get_position(self, employee_name):
         for employee in self.employees:
             if employee.name == employee_name:  # So sánh với tên
@@ -150,6 +153,10 @@ class EmployeeList:
         query = "SELECT name FROM Positions WHERE position_id = %s"
         result = self.db.fetch_one(query, (position_id,))
         return result['name'] if result else None
+    def get_position_id_from_employee(self, emp_id):
+        query = "SELECT position_id FROM Employee WHERE emp_id = %s"
+        result = self.db.fetch_one(query, (emp_id,))
+        return result['position_id'] if result else None
     def get_department_id_by_name(self, department_name):
         query = "SELECT dept_id FROM Department WHERE name = %s"
         result = self.db.fetch_one(query, (department_name,))
@@ -169,11 +176,22 @@ class EmployeeList:
         self.db.close_connection()  # Đóng kết nối khi không còn sử dụng
     def get_employee_id_by_name(self, name):
         # Truy vấn để lấy emp_id dựa trên name
-        query = "SELECT emp_id FROM Employee WHERE name = ?"
-        result = self.db.fetch_one(query, (name,))  # Lấy một bản ghi
+        query = "SELECT emp_id, position_id FROM Employee WHERE name = %s"
+        result = self.db.fetch_one(query, (name,))  # Lưu ý cú pháp với %s nếu sử dụng MySQL connector
 
         if result:
-            return result['emp_id']  # Trả về emp_id nếu tìm thấy
+            return result  # Trả về một từ điển chứa emp_id và position_id
         else:
             print("Không tìm thấy nhân viên với tên:", name)
             return None  # Trả về None nếu không tìm thấy
+    def get_employee_name_by_id(self, emp_id):
+        # Truy vấn để lấy emp_id dựa trên name
+        query = "SELECT name FROM Employee WHERE emp_id = %s"
+        result = self.db.fetch_one(query, (emp_id,))  # Lưu ý cú pháp với %s nếu sử dụng MySQL connector
+
+        return result['name'] if result else None
+    def get_employee_info(self, employee_name):
+        query = "SELECT * FROM Employee WHERE name = %s"  # Truy vấn để lấy thông tin nhân viên
+        return self.db.fetch_one(query, (employee_name,))  # Trả về thông tin của nhân viên
+
+        

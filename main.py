@@ -37,7 +37,7 @@ class MainApp(tk.Tk):
         self.employee_tab.close_connection()    # Nếu EmployeeApp cũng cần
         self.positon_tab.close_connection()
         # self.working_time_tab.close_connection() # Nếu WokingTimeApp cũng cần
-        # self.Payroll_tab.close_connection()     # Nếu PayrollApp cũng cần
+        self.Payroll_tab.close_connection()     # Nếu PayrollApp cũng cần
         self.destroy()                          # Đóng ứng dụng
 
     # def update_employee_list_in_employee_app(self):

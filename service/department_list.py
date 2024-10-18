@@ -1,22 +1,35 @@
 from enity.department import Department  # Chắc chắn rằng đường dẫn nhập đúng
 from mysql.connector import Error
 from service.connect_sql import DatabaseConnection
-
-class departmentList:  # Đặt tên lớp với chữ cái đầu viết hoa theo quy tắc PEP 8
+from enity.Payroll import Payroll
+class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa theo quy tắc PEP 8
     def __init__(self):
         self.db = DatabaseConnection()  # Khởi tạo kết nối với cơ sở dữ liệu
         self.db.connect()  # Kết nối đến cơ sở dữ liệu
             
-    def add_department(self, name):
+    def add_payroll(self, emp_id, month, year, day_off, basic_salary, reward, net_salary):
         try:
-            # Tạo một đối tượng Department mới
-            new_department = Department(name)
+            # Tạo một đối tượng Payroll mới
+            new_payroll = Payroll(emp_id, month, year, day_off, basic_salary, reward, net_salary)
             
-            # Thêm phòng ban vào cơ sở dữ liệu
-            query = "INSERT INTO Department (dept_id, name) VALUES (%s, %s)"
-            self.db.execute_query(query, (str(new_department.dept_id), new_department.name))
+            # Thêm bảng lương vào cơ sở dữ liệu
+            query = '''
+                INSERT INTO Payroll (payroll_id, emp_id, month, year, day_off, basic_salary, reward, net_salary)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+            '''
+            self.db.execute_query(query, (
+                str(new_payroll.payroll_id), 
+                new_payroll.emp_id, 
+                new_payroll.month, 
+                new_payroll.year, 
+                new_payroll.day_off, 
+                new_payroll.basic_salary, 
+                new_payroll.reward, 
+                new_payroll.net_salary
+            ))
+            print("Payroll record added successfully.")
         except Error as e:
-            print(f"Error: '{e}' occurred while adding department")
+            print(f"Error: '{e}' occurred while adding payroll")
     def get_department_name(self, department_id):
         query = "SELECT name FROM Department WHERE dept_id = ?"
         self.db.execute_query(query, (department_id,))
