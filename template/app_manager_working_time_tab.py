@@ -20,8 +20,8 @@ class ManagerWorkingTimeTab(tk.Frame):
         employees = self.employee_list.get_employees()
         
         # Lưu danh sách tên và id
-        self.employee_names = [employee.name for employee in employees]  # Sử dụng thuộc tính name của đối tượng Employee
-        self.employee_ids = [employee.emp_id for employee in employees]  # Sử dụng thuộc tính emp_id của đối tượng Employee
+        self.employee_names = [employee[name] for employee in employees]  # Sử dụng thuộc tính name của đối tượng Employee
+        self.employee_ids = [employee[emp_id] for employee in employees]  # Sử dụng thuộc tính emp_id của đối tượng Employee
 
         # Ô nhập Emp Name
         tk.Label(self, text="Emp Name:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
