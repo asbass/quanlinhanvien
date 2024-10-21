@@ -3,11 +3,13 @@ from tkinter import messagebox, ttk
 from enity.employee import Employee
 from service.employee_list import EmployeeList
 from service.department_list import departmentList
+from service.posittion_list import PositionList
 class EmployeeApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.employee_list = EmployeeList()
         self.department_list = departmentList()
+        self.postion_list = PositionList()
         # Khung nhập liệu
         self.frame = tk.Frame(self)
         self.frame.pack(pady=10)
@@ -31,7 +33,7 @@ class EmployeeApp(tk.Frame):
         self.position_combobox = ttk.Combobox(self.frame, state="readonly")  # Tạo Combobox
         self.position_combobox.grid(row=1, column=3, padx=5, pady=5)
         self.position_combobox.set("Chọn Chức Vụ")
-        self.set_position_options()
+        self.load_Postions_names()
         # Khung chứa các nút (Thêm, Sửa, Xóa)
         button_frame = tk.Frame(self)
         button_frame.pack(pady=10)
@@ -89,60 +91,67 @@ class EmployeeApp(tk.Frame):
         
         else:
             self.employee_list.add_employee(name, age, department, position)
-            self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
             self.update_treeview()
             self.clear_entries()
             if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
                 self.master.master.update_employee_list_in_employee_app()
         
-
     def update_employee(self):
-        selected_item = self.tree.selection()
-        if selected_item:
-            index = self.tree.index(selected_item)
-            name = self.name_entry.get()
-            age = self.age_entry.get()
-            department = self.department_combobox.get()
-            position = self.position_combobox.get()
-
-            # Kiểm tra điều kiện nhập liệu
-            if not name or not age or not department or not position:
-                messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
-            elif not age.isdigit() or int(age) < 18 or int(age) > 60:
-                messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
-            else:
-                self.employee_list.update_employee(index, name, age, department, position)
-                self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi cập nhật
-                self.update_treeview()
-                self.clear_entries()
-                if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
-                    self.master.master.update_employee_list_in_employee_app()
-        else:
+        selected_item = self.tree.selection()  # This returns a tuple of selected item IDs
+        if not selected_item:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để sửa!")
+            return
 
-    def load_Department_names(self):
+        # Get the first selected item ID
+        selected_item_id = selected_item[0]
         
-       Department_names = self.department_list.get_department_names()  # Giả sử có phương thức này
-       self.department_combobox['values'] = Department_names
+        # Now use this ID to fetch the employee's data
+        # Get the values of the selected item directly from the tree
+        emp_values = self.tree.item(selected_item_id)["values"]  
+        emp_id = emp_values[0]  # Get the emp_id from the values
+
+        # Fetch values from input fields
+        name = self.name_entry.get().strip()
+        age = self.age_entry.get().strip()
+        department = self.department_combobox.get()
+        position = self.position_combobox.get()
+
+        # Check input conditions
+        if not name or not age or not department or not position:
+            messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
+        elif not age.isdigit() or not (18 <= int(age) <= 60):
+            messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
+        else:
+            try:
+                # Call the update_employee method with the appropriate parameters
+                self.employee_list.update_employee(emp_id, name, age, department, position)  
+                self.update_treeview()  # Refresh the interface
+                self.clear_entries()  # Clear input fields
+            except Exception as e:
+                messagebox.showerror("Lỗi", str(e))
+                print(str(e))
+
+
+    def load_Postions_names(self):
+       Postions_names = self.postion_list.get_position_names()  # Giả sử có phương thức này
+       self.position_combobox['values'] = Postions_names
     def delete_employee(self):
         selected_item = self.tree.selection()
         if selected_item:
-            index = self.tree.index(selected_item)
-            self.employee_list.delete_employee(index)
-            self.employee_list.save_to_csv()  # Lưu vào tệp CSV sau khi xóa
-            self.update_treeview()
-            self.clear_entries()
-            if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
-                self.master.master.update_employee_list_in_employee_app()
+            confirm = messagebox.askyesno("Xác nhận", "Bạn có chắc chắn muốn xóa nhân viên này?")
+            if confirm:
+                emp_id = self.tree.item(selected_item[0], 'values')[0]  # Lấy ID nhân viên từ Treeview
+                self.employee_list.delete_employee(emp_id)  # Gọi phương thức xóa
+                self.update_treeview()  # Cập nhật giao diện sau khi xóa
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để xóa!")
 
     def on_tree_select(self, event):
         selected_item = self.tree.selection()
+        
         if selected_item:
             # Lấy dữ liệu từ dòng đã chọn
             selected_employee = self.tree.item(selected_item)["values"]
-
             # Gán các giá trị từ dòng đã chọn vào các trường nhập liệu
             self.name_entry.delete(0, tk.END)
             self.name_entry.insert(0, selected_employee[1])  # Giá trị Tên ở cột thứ 2
@@ -176,14 +185,26 @@ class EmployeeApp(tk.Frame):
                 if keyword in emp.department.lower():  # Tìm kiếm theo phòng ban
                     filtered_employees.append(emp)
 
+        # Nếu vẫn chưa tìm thấy, tìm kiếm từ cơ sở dữ liệu
+        if not filtered_employees:
+            query = "SELECT * FROM Employee WHERE LOWER(name) LIKE %s OR LOWER(department) LIKE %s"
+            search_pattern = f"%{keyword}%"  # Tạo mẫu tìm kiếm
+            results = self.employee_list.db.fetch_all(query, (search_pattern, search_pattern))
+
+            # Chuyển đổi kết quả từ truy vấn thành đối tượng Employee
+            for row in results:
+                emp = Employee(row['name'], row['age'], row['department_id'], row['position_id'])
+                filtered_employees.append(emp)
+
         # Hiển thị danh sách nhân viên đã lọc, nếu không có kết quả thì thông báo
         if filtered_employees:
             self.update_treeview(filtered_employees)
         else:
             messagebox.showinfo("Thông báo", "Không tìm thấy nhân viên!")
             self.update_treeview()  # Hiển thị lại toàn bộ danh sách nhân viên nếu không tìm thấy
+
         print([emp.name for emp in filtered_employees])  # Kiểm tra xem nhân viên nào được tìm thấy
-    
+        
 
     def sort_column(self, col, reverse):
         # Lấy danh sách nhân viên hiện tại
@@ -209,41 +230,48 @@ class EmployeeApp(tk.Frame):
         # Xóa dữ liệu cũ trong Treeview
         for item in self.tree.get_children():
             self.tree.delete(item)
-
+        
         # Nếu không có danh sách nào được truyền vào, hiển thị toàn bộ nhân viên
         if employees is None:
             employees = self.employee_list.get_employees()
         self.clear_entries()
         # Thêm các nhân viên vào Treeview
         for emp in employees:
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position))
+            department_name = self.employee_list.get_department_name_by_id(emp["department_id"])
+            positons_name = self.employee_list.get_position_name_by_id(emp["position_id"])
+            # Thêm thông tin nhân viên vào Treeview
+            self.tree.insert("", "end", values=(
+                emp['emp_id'], 
+                emp["name"], 
+                emp["age"], 
+                department_name,  # Hiển thị tên phòng ban
+                positons_name
+            ))
   
     def display_employees(self):
-        # Xóa dữ liệu cũ trong Treeview
+    # Xóa dữ liệu cũ trong Treeview
         for row in self.tree.get_children():
             self.tree.delete(row)
 
         # Thêm nhân viên vào Treeview
         for emp in self.employee_list.get_employees():
-            self.tree.insert("", "end", values=(emp.emp_id, emp.name, emp.age, emp.department, emp.position))
+            # Lấy tên phòng ban từ department_id
+            department_name = self.employee_list.get_department_name_by_id(emp["department_id"])
+            positons_name = self.employee_list.get_position_name_by_id(emp["position_id"])
+            # Thêm thông tin nhân viên vào Treeview
+            self.tree.insert("", "end", values=(
+                emp['emp_id'], 
+                emp["name"], 
+                emp["age"], 
+                department_name,  # Hiển thị tên phòng ban
+                positons_name
+            ))
     def update_department_list(self, department_list):
         self.department_combobox['values'] = [dept.name for dept in department_list]
         print("Danh sách phòng ban đã được cập nhật.")
     def load_Department_names(self):
-        
         Department_names = self.department_list.get_department_names()  # Giả sử có phương thức này
         self.department_combobox['values'] = Department_names
-    def set_position_options(self):
-        # Cập nhật danh sách các chức vụ ở đây
-        positions = [
-            "Quản lý",
-            "Trưởng phòng",
-            "Nhân viên kế toán",
-            "Kỹ sư",
-            "Nhân viên",
-            "Nhân viên hành chính",
-            "Trợ lý",
-            "Chuyên viên"
-        ]  # Danh sách chức vụ
-        self.position_combobox['values'] = positions
- 
+
+    def close_connection(self):
+        self.employee_list.close_connection()  # Đóng kết nối từ departmentList

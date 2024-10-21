@@ -94,3 +94,7 @@ class WorkingTimeService:
             print("\n")
 
         return result
+
+    def get_off_days_by_employee(self, emp_id):
+        # Lọc danh sách ngày nghỉ theo emp_id
+        return [wt.time for wt in self.working_time_list if wt.emp_id == emp_id]
