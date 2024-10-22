@@ -60,11 +60,15 @@ class EmployeeList:
         results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
         # Extract IDs from the results
         return [result['emp_id'] for result in results]
+    def get_employee_names(self):
+            employees = self.get_employee_name()
+            return [employee['name'] for employee in employees if 'name' in employee]  # Safety check for 'name'
     def get_employee_name(self):
-        query = "SELECT name FROM Employee"
-        results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
-        # Extract IDs from the results
-        return [result['name'] for result in results]
+        # Lấy danh sách các phòng ban
+        self.db.close_connection()
+        self.db.connect()
+        query = "SELECT * FROM Employee"
+        return self.db.fetch_all(query)
     def get_position(self, employee_name):
         for employee in self.employees:
             if employee.name == employee_name:  # So sánh với tên

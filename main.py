@@ -31,10 +31,9 @@ class MainApp(tk.Tk):
         # Đặt tab_control vào giao diện
         self.tab_control.pack(expand=1, fill="both")
 
-    # def update_employee_list_in_employee_app(self):
-    #     employee_list = self.employee_tab.employee_list.get_employees()  # Truy cập từ department_tab
-    #     self.Payroll_tab.update_employee_list(employee_list)
-    #     self.Payroll_tab.update_employee_position()
+    def update_employee_list_in_employee_app(self):
+        employee_list = self.employee_tab.employee_list.get_employee_names()  # Truy cập từ department_tab
+        self.Payroll_tab.update_employee_list(employee_list)
     def update_department_list_in_department_app(self):
         # Lấy danh sách phòng ban và cập nhật danh sách
         department_list = self.department_tab.department_list.get_department_names()
