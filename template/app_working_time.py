@@ -28,3 +28,14 @@ class WokingTimeApp(tk.Frame):
         # Thêm các tab vào notebook
         self.notebook.add(self.tab1, text="Bảng điều khiển")
         self.notebook.add(self.tab2, text="Thời gian làm việc")
+
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_selected)
+
+    def on_tab_selected(self, event):
+        selected_tab = event.widget.select()
+        if event.widget.tab(selected_tab, "text") == "Thời gian làm việc":
+            self.tab2.load_employee_data()
+    
+    def set_to_tab_default(self):
+        # Đặt lại tab con về B1
+        self.notebook.select(self.tab1)

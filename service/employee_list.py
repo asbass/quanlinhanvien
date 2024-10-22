@@ -103,8 +103,10 @@ class EmployeeList:
         except Exception as e:
             print("Lỗi khi xóa nhân viên:", e)
     def get_employees(self):
+        self.db.close_connection()
+        self.db.connect()
         # Lấy danh sách các phòng ban
-        query = "SELECT * FROM Employee"
+        query = "SELECT * FROM employee"
         return self.db.fetch_all(query)
     def get_employee_by_id(self, emp_id):
         """Retrieve employee information by ID from the database."""
