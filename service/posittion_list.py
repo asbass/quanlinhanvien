@@ -90,3 +90,11 @@ class PositionList:
         return None  # Trả về None nếu không tìm thấy vị trí
     def close_connection(self):
         self.db.close_connection()  # Đóng kết nối khi không còn sử dụng
+    def get_position_by_emp_id(self, position_id):
+        query = "SELECT name, salary_multiplier FROM Positions WHERE position_id = %s"
+        result = self.db.fetch_one(query, (position_id,))  # Giả sử bạn đã có phương thức fetch_one trong db
+
+        if result:
+            return Position(name=result['name'], salary_multiplier=result['salary_multiplier'])
+        else:
+            return None  # Trả về None nếu không tìm thấy chức vụ

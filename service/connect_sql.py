@@ -30,17 +30,18 @@ class DatabaseConnection:
             print("The database connection has been closed.")
 
     def execute_query(self, query, data=None):
-        """Execute a SQL query with optional parameters."""
         cursor = self.connection.cursor()
         try:
             if data:
                 cursor.execute(query, data)
             else:
                 cursor.execute(query)
-            self.connection.commit()
-            print("Query executed successfully.")
+            self.connection.commit()  # Lưu thay đổi
+            print("Query executed and committed successfully.")
         except Error as e:
             print(f"Error: '{e}' occurred during query execution")
+            self.connection.rollback()  # Khôi phục thay đổi
+            print("Transaction rolled back.")
         finally:
             cursor.close()
     def fetch_one(self, query, data=None):
@@ -51,13 +52,16 @@ class DatabaseConnection:
                 cursor.execute(query, data)
             else:
                 cursor.execute(query)
+
             result = cursor.fetchone()  # Lấy một bản ghi
-            return result if result else {}  # Trả về một từ điển rỗng nếu không có bản ghi nào
+            cursor.fetchall()  # Đọc hết kết quả để tránh lỗi "Unread result found"
+            
+            return result if result else {}
         except Error as e:
             print(f"Error: '{e}' occurred during data fetch")
             return {}
         finally:
-            cursor.close()
+            cursor.close()  # Đảm bảo rằng con trỏ luôn được đóng
     def fetch_all(self, query):
         """Fetch all results from a SQL query."""
         cursor = self.connection.cursor(dictionary=True)
@@ -70,4 +74,9 @@ class DatabaseConnection:
             return []
         finally:
             cursor.close()
-
+    def commit(self):
+        if self.connection and self.connection.is_connected():
+            self.connection.commit()
+            print("Commit successful.")
+        else:
+            print("No active connection to commit.")
