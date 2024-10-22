@@ -159,8 +159,8 @@ class EmployeeList:
             }
             # Thêm nhân viên vào danh sách
             self.employees.append(emp)
-
         print(f"Updated employee list: {self.employees}")  # Debugging step
+        return self.employees
     def get_department_name_by_id(self, department_id):
         query = "SELECT name FROM Department WHERE dept_id = %s"
         result = self.db.fetch_one(query, (department_id,))
