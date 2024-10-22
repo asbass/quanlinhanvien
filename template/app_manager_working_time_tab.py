@@ -2,7 +2,6 @@ import datetime
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-import datetime
 from tkcalendar import Calendar
 import os
 from PIL import Image, ImageTk
@@ -14,20 +13,16 @@ class ManagerWorkingTimeTab(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.working_time = WorkingTimeService()
-        self.employee_list = EmployeeList()  
-
-        # Get the list of employees
-        employees = self.employee_list.get_employees()
-
-
-        # Create a frame for input fields
+        self.employee_list = EmployeeList()
+        # self.load_employee_data()
         self.input_frame = tk.Frame(self)
         self.input_frame.pack(padx=10, pady=10)
-
-        # Create Combobox for Emp Name
+        # Ô nhập Emp Name
         tk.Label(self.input_frame, text="Emp Name:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
         self.emp_id_combobox = ttk.Combobox(self.input_frame)
         self.emp_id_combobox.grid(row=0, column=1, padx=5, pady=5)
+
+        self.load_employee_data() 
         self.emp_id_combobox.bind("<<ComboboxSelected>>", self.on_combobox_select)
 
         icon_calendar_path = os.path.join(os.path.dirname(__file__), '..', 'image', 'calendar.png')
@@ -41,7 +36,7 @@ class ManagerWorkingTimeTab(tk.Frame):
         tk.Label(self.input_frame, text="Status:").grid(row=1, column=0, padx=5, pady=5, sticky='w')
         self.status_entry = ttk.Combobox(self.input_frame, values=["Dòng ý", "Từ chối", "None"])
         self.status_entry.grid(row=1, column=1, padx=5, pady=5)
-        self.status_entry.set("None")
+        self.status_entry.set('None')
 
         # Ô nhập Reason
         tk.Label(self.input_frame, text="Reason:").grid(row=3, column=0, padx=5, pady=5, sticky='w')
@@ -83,10 +78,24 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.tree.heading("Type Time", text="Type Time")
         self.tree.pack(pady=10, fill='both', expand=True)
         self.tree.tag_configure("center", anchor="center")
+        self.update_treeview()
         self.tree.bind("<Double-1>", self.on_tree_select)
 
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
+
+
+    def load_employee_data(self):
+        employees = self.employee_list.get_employees()
+        self.employee_names = [employee['name'] for employee in employees]
+        self.employee_ids = [employee['emp_id'] for employee in employees]
+
+        self.emp_id_combobox['values'] = self.employee_names
+
+        if self.employee_names:
+            self.emp_id_combobox.set(self.employee_names[0]) 
+            self.selected_emp_id = tk.StringVar(value=self.employee_ids[0])
+    
 
     def select_date(self, calendar, dialog):
         selected_date = calendar.get_date()
@@ -98,6 +107,9 @@ class ManagerWorkingTimeTab(tk.Frame):
         selected_name = self.emp_id_combobox.get()
         selected_index = self.employee_names.index(selected_name)
         self.selected_emp_id.set(self.employee_ids[selected_index])  
+        employees = self.employee_list.get_employees()
+        for employee in employees:
+            print(employee.emp_id)
 
     def add_working_time(self):
         emp_id = self.selected_emp_id.get()
@@ -106,46 +118,55 @@ class ManagerWorkingTimeTab(tk.Frame):
         reason = self.reason_entry.get()
         typeOff = self.typeOff_entry.get()
         typeTime = self.typeTime_entry.get()
-
         try:
             # Kiểm tra định dạng ngày (dd/mm/yyyy)
             datetime.datetime.strptime(time, "%d/%m/%Y")  
 
             # Thực hiện lưu thông tin vào hệ thống
-            print(f"emp_id: {emp_id},Time: {time}, Status: {status}, Reason: {reason}, Type Off: {typeOff}, Type Time: {typeTime}")
+            # print(f"emp_id: {emp_id},Time: {time}, Status: {status}, Reason: {reason}, Type Off: {typeOff}, Type Time: {typeTime}")
             
             # Giả sử bạn có hàm để xử lý thêm thời gian làm việc:
+            print(time)
+            print(typeTime)
             self.working_time.add_working_time(emp_id, time, status, reason, typeOff, typeTime)
             self.update_treeview()
             messagebox.showinfo("Thành công", "Thời gian làm việc đã được thêm.")
             self.clear_entries()  # Xóa các ô nhập liệu sau khi thêm
-
+            # self.working_time.list_working_time_by_year(2024)
         except ValueError as e:
             messagebox.showerror("Lỗi", f"Định dạng ngày không hợp lệ: {str(e)}")
 
     def update_working_time(self):
         selected_item = self.tree.selection()
-        if selected_item:
-            index = self.tree.index(selected_item)
-            emp_id = self.selected_emp_id.get()
-            time = self.selected_date_label.cget("text")
-            status = self.status_entry.get()
-            reason = self.reason_entry.get()
-            typeOff = self.typeOff_entry.get()
-            typeTime = self.typeTime_entry.get()
-
-            self.working_time.update_working_time(index, emp_id, time, status, reason, typeOff,typeTime)
-            self.update_treeview()
-            self.clear_entries()
-        else:
-            messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để sửa!")
+        if not selected_item:
+            messagebox.showwarning("Cảnh Báo", "Vui lòng chọn thời gian làm việc để sửa!")
+            return
+        selected_item_id = selected_item[0]
+        working_time_values = self.tree.item(selected_item_id)["values"]  
+        working_time_id = working_time_values[0]
+        emp_id = self.selected_emp_id.get()
+        time = self.selected_date_label.cget("text")
+        status = self.status_entry.get()
+        reason = self.reason_entry.get()
+        typeOff = self.typeOff_entry.get()
+        typeTime = self.typeTime_entry.get()
+        try:
+            # Call the update_employee method with the appropriate parameters
+            self.working_time.update_working_time(working_time_id, emp_id, time, status, reason, typeOff,typeTime) 
+            self.update_treeview()  # Refresh the interface
+            self.clear_entries()  # Clear input fields
+        except Exception as e:
+            messagebox.showerror("Lỗi", str(e))
+            print(str(e))
 
 
     def delete_working_time(self):
         selected_item = self.tree.selection()
         if selected_item:
-            index = self.tree.index(selected_item)
-            self.working_time.delete_working_time(index)
+            selected_item_id = selected_item[0]
+            working_time_values = self.tree.item(selected_item_id)["values"]  
+            working_time_id = working_time_values[0]
+            self.working_time.delete_working_time(working_time_id)
             self.update_treeview()
             self.clear_entries()
         else:
@@ -155,33 +176,45 @@ class ManagerWorkingTimeTab(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             index = self.tree.index(selected_item)
-            working_time = self.working_time.list_working_times()[index]
-            indexEmp = self.employee_ids.index(int(working_time.emp_id))
+            working_time = self.working_time.get_working_time()[index]
+            indexEmp = self.employee_ids.index(str(working_time.emp_id))
             self.selected_emp_id.set(working_time.emp_id)
             self.emp_id_combobox.set(self.employee_names[indexEmp])
-            self.selected_date_label.config(text=working_time.time)
+            self.selected_date_label.config(text=working_time.time.strftime("%d/%m/%Y"))
+            if working_time.status == "accept":
+                status_display = "Đồng ý"
+            elif working_time.status == "decline":
+                status_display = "Từ chối"
+            else:
+                status_display = "None"
             self.status_entry.delete(0, tk.END)
-            self.status_entry.insert(0, working_time.status)
+            self.status_entry.insert(0, status_display)
             self.reason_entry.delete(0, tk.END)
-            self.reason_entry.insert(0, working_time.reason)
+            self.reason_entry.insert(0, working_time.reason if working_time.reason is not None else "")
             self.typeOff_entry.delete(0, tk.END)
-            self.typeOff_entry.insert(0, working_time.typeOff)
+            self.typeOff_entry.insert(0, working_time.type_off)
             self.typeTime_entry.delete(0, tk.END)
-            self.typeTime_entry.insert(0, working_time.typeTime)
+            self.typeTime_entry.insert(0, working_time.type_time)
 
     def update_treeview(self):
         # Làm sạch Treeview trước khi cập nhật
         for item in self.tree.get_children():
             self.tree.delete(item)
         employees = self.employee_list.get_employees()
-        for working_time in self.working_time.working_time_list:
-            employee_name = None 
+        for working_time in self.working_time.get_working_time():
+            employee_name = "None" 
             for employee in employees:
-                if employee.emp_id == int(working_time.emp_id):
-                    employee_name = employee.name
+                if employee['emp_id'] == str(working_time.working_time_id):
+                    employee_name = employee['name']  # Truy cập tên nhân viên qua khóa 'name'
                     break
+            if working_time.status == "accept":
+                status_display = "Đồng ý"
+            elif working_time.status == "decline":
+                status_display = "Từ chối"
+            else:
+                status_display = None
             self.tree.insert("", "end", values=(working_time.working_time_id,
-            employee_name , working_time.time, working_time.status, working_time.reason, working_time.typeOff, working_time.typeTime))
+            employee_name , working_time.time.strftime("%d/%m/%Y"), status_display, working_time.reason, working_time.type_off, working_time.type_time))
 
     def clear_entries(self):
         # Xóa các ô nhập liệu

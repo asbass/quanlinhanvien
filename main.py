@@ -20,17 +20,25 @@ class MainApp(tk.Tk):
         self.department_tab = DepartmentApp(self.tab_control)
         self.positon_tab = PositonsApp(self.tab_control)
         self.Payroll_tab = PayrollApp(self.tab_control)
-        self.WokingTimeApp_tab = WokingTimeApp(self.tab_control)
+        self.working_time_tab = WokingTimeApp(self.tab_control)
         # Thêm các tab vào tab_control
         self.tab_control.add(self.employee_tab, text="Nhân Viên")
         self.tab_control.add(self.department_tab, text="Phòng Ban")
         self.tab_control.add(self.Payroll_tab, text="Bảng lương")
         self.tab_control.add(self.positon_tab,text ="chức vụ")
-        self.tab_control.add(self.WokingTimeApp_tab,text ="ngày nghỉ")
+        self.tab_control.add(self.working_time_tab,text ="Thời gian làm việc")
+
+        self.tab_control.bind("<<NotebookTabChanged>>", self.on_tab_changed)
+
         # Đặt tab_control vào giao diện
         self.tab_control.pack(expand=1, fill="both")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+    def on_tab_changed(self, event):
+        selected_tab = event.widget.select()
+        if event.widget.tab(selected_tab, "text") == "Thời gian làm việc":
+            # Khi tab B được chọn, chuyển đến tab B1
+            self.working_time_tab.set_to_tab_default()
 
     def on_closing(self):
         # Đóng kết nối trong các tab

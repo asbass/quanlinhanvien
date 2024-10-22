@@ -110,7 +110,10 @@ class EmployeeList:
     def get_employeezs(self):
         return self.employees 
     def get_employees(self):
-        query = "SELECT * FROM Employee"
+        self.db.close_connection()
+        self.db.connect()
+        # Lấy danh sách các phòng ban
+        query = "SELECT * FROM employee"
         return self.db.fetch_all(query)
     def get_employee_by_id(self, emp_id):
         """Retrieve employee information by ID from the database."""
