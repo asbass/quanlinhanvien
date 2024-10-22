@@ -192,3 +192,6 @@ class WorkingTimeService:
         
         # Trả về số ngày nghỉ, sử dụng 'days_off' thay vì 'name'
         return result['days_off'] if result else 0  # Trả về 0 nếu không có kết quả
+    def close_connection(self):
+        """Close the database connection."""
+        self.db.close_connection()  # Close the connection when no longer in use
