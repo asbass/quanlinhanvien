@@ -62,6 +62,8 @@ class PositionList:
             pos.position_id = row['position_id']  # Gán position_id từ cơ sở dữ liệu
             self.positions.append(pos)
     def get_positions(self):
+        self.db.close_connection()
+        self.db.connect()
         # Lấy danh sách các phòng ban
         query = "SELECT * FROM Positions"
         return self.db.fetch_all(query)
@@ -70,6 +72,7 @@ class PositionList:
         return self.positions
     def get_position_names(self):
         """Trả về danh sách tên vị trí."""
+        
         Positions =self.get_positions()
         return [position['name'] for position in Positions if 'name' in position]
 

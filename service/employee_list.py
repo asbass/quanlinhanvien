@@ -9,18 +9,10 @@ class EmployeeList:
         self.load_employees_from_db()
         self.departments = []  # Khởi tạo danh sách phòng ban
         self.department_id = []  # Khởi tạo danh sách ID phòng ban
-        print( self.employees)
     def add_employee(self, name, age, department, position):
         # Tìm department_id và position_id từ tên phòng ban và chức vụ
-        department_query = "SELECT dept_id FROM Department WHERE name = %s"
-        position_query = "SELECT position_id FROM Positions WHERE name = %s"
-
-        department_result = self.db.fetch_one(department_query, (department,))
-        position_result = self.db.fetch_one(position_query, (position,))
-
-        department_id = department_result['dept_id']
-        position_id = position_result['position_id']
-
+        department_id = self.get_department_id_by_name(department)
+        position_id = self.get_position_id_by_name(position)
         # Thêm nhân viên mới vào danh sách
         new_employee = Employee(name, age, department_id, position_id)
         self.employees.append(new_employee)
@@ -33,17 +25,11 @@ class EmployeeList:
         data = (str(new_employee.emp_id), new_employee.name, new_employee.age, new_employee.department, new_employee.position)
         self.db.execute_query(query, data)
         print(f"Inserting employee: {new_employee.name}")  # Debug
-
     def update_employee(self, emp_id, name, age, department, position):
         emp_id_str = str(emp_id)
         # Debugging: Print the current employee IDs
-        print("Current employee IDs:", self.get_employee_ids())
 
         employee = self.get_employee_by_id(emp_id_str)
-        
-        if not employee:
-            print("No employee found with emp_id:", emp_id_str)
-            return
 
         # Update employee attributes
         employee.name = name
@@ -65,30 +51,10 @@ class EmployeeList:
 
         try:
             self.db.execute_query(query, data)
-            print(f"Employee {emp_id_str} updated successfully.")
         except Exception as e:
             print("Error updating employee:", e)
-
-    def get_employee_ids(self):
-        """Retrieve employee IDs from the database."""
-        query = "SELECT emp_id FROM Employee"
-        results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
-        # Extract IDs from the results
-        return [result['emp_id'] for result in results]
-    def get_employee_name(self):
-        query = "SELECT name FROM Employee"
-        results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
-        # Extract IDs from the results
-        return [result['name'] for result in results]
-    def get_position(self, employee_name):
-        for employee in self.employees:
-            if employee.name == employee_name:  # So sánh với tên
-                print(employee.position)
-                return employee.position  # Trả về chức vụ nếu tìm thấy
-        return ''  # Nếu không tìm thấy, trả về chuỗi rỗng
     def delete_employee(self, emp_id):
         emp_id_str = str(emp_id)  # Chuyển đổi emp_id sang chuỗi nếu cần
-
         # Kiểm tra xem nhân viên có tồn tại hay không
         check_query = "SELECT * FROM Employee WHERE emp_id = %s"
         existing_employee = self.db.fetch_one(check_query, (emp_id_str,))  # Sử dụng fetch_one để kiểm tra
@@ -104,9 +70,31 @@ class EmployeeList:
             print(f"Đã xóa nhân viên có emp_id: {emp_id_str} thành công.")
 
             # Cập nhật danh sách nhân viên trong bộ nhớ
-            self.employees = [emp for emp in self.employees if str(emp.emp_id) != emp_id_str]
+            self.employees = [emp for emp in self.employees if str(emp['emp_id']) != emp_id_str]  # Sử dụng emp['emp_id']
         except Exception as e:
             print("Lỗi khi xóa nhân viên:", e)
+    def get_employee_ids(self):
+        """Retrieve employee IDs from the database."""
+        query = "SELECT emp_id FROM Employee"
+        results = self.db.fetch_all(query)  # Assuming this returns a list of dictionaries
+        # Extract IDs from the results
+        return [result['emp_id'] for result in results]
+    def get_employee_names(self):
+            employees = self.get_employee_name()
+            return [employee['name'] for employee in employees if 'name' in employee]  # Safety check for 'name'
+    def get_employee_name(self):
+        # Lấy danh sách các phòng ban
+        self.db.close_connection()
+        self.db.connect()
+        query = "SELECT * FROM Employee"
+        return self.db.fetch_all(query)
+    def get_position(self, employee_name):
+        for employee in self.employees:
+            if employee.name == employee_name:  # So sánh với tên
+                print(employee.position)
+                return employee.position  # Trả về chức vụ nếu tìm thấy
+        return ''  # Nếu không tìm thấy, trả về chuỗi rỗng
+    
     def get_employeezs(self):
         return self.employees 
     def get_employees(self):
@@ -144,7 +132,6 @@ class EmployeeList:
         """Load employees from the database."""
         query = "SELECT * FROM Employee"
         rows = self.db.fetch_all(query)
-        print(f"Rows fetched from database: {rows}")  # Debugging step
         
         self.employees.clear()  # Xóa danh sách nhân viên cũ
         
@@ -162,7 +149,6 @@ class EmployeeList:
             }
             # Thêm nhân viên vào danh sách
             self.employees.append(emp)
-        print(f"Updated employee list: {self.employees}")  # Debugging step
         return self.employees
     def get_department_name_by_id(self, department_id):
         query = "SELECT name FROM Department WHERE dept_id = %s"
@@ -178,6 +164,8 @@ class EmployeeList:
         result = self.db.fetch_one(query, (emp_id,))
         return result['position_id'] if result else None
     def get_department_id_by_name(self, department_name):
+        self.db.close_connection()
+        self.db.connect()
         query = "SELECT dept_id FROM Department WHERE name = %s"
         result = self.db.fetch_one(query, (department_name,))
         return result['dept_id'] if result else None
@@ -186,12 +174,16 @@ class EmployeeList:
         results = self.db.fetch_all(query)  # Fetch all records
         return [row['name'] for row in results] if results else []
     def get_position_id_by_name(self, position_name):
+        self.db.close_connection()
+        self.db.connect()
         query = "SELECT position_id FROM Positions WHERE name = %s"
         result = self.db.fetch_one(query, (position_name,))
         return result['position_id'] if result else None
     def close_connection(self):
         self.db.close_connection()  # Đóng kết nối khi không còn sử dụng
     def get_employee_id_by_name(self, name):
+        self.db.close_connection()
+        self.db.connect()
         # Truy vấn để lấy emp_id dựa trên name
         query = "SELECT emp_id, position_id FROM Employee WHERE name = %s"
         result = self.db.fetch_one(query, (name,))
