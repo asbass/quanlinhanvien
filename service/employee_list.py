@@ -183,6 +183,8 @@ class EmployeeList:
     def close_connection(self):
         self.db.close_connection()  # Đóng kết nối khi không còn sử dụng
     def get_employee_id_by_name(self, name):
+        self.db.close_connection()
+        self.db.connect()
         # Truy vấn để lấy emp_id dựa trên name
         query = "SELECT emp_id, position_id FROM Employee WHERE name = %s"
         result = self.db.fetch_one(query, (name,))
