@@ -72,11 +72,15 @@ class DepartmentApp(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             dept_id = self.tree.item(selected_item)["values"][0]  # Lấy mã phòng ban
+            print("Mã phòng ban được chọn:", dept_id)  # Kiểm tra mã
             self.department_list.del_department(dept_id)  # Xóa phòng ban
             self.update_treeview()  # Cập nhật treeview
             self.clear_entries()  # Xóa các trường nhập liệu
-            if hasattr(self.master.master, 'update_department_list_in_employee_app'):
-                self.master.master.update_department_list_in_employee_app()  # Cập nhật combobox
+            if hasattr(self.master.master, 'update_department_list_in_department_app'):
+                print("Phương thức cập nhật tồn tại")
+                self.master.master.update_department_list_in_department_app()
+            else:
+                print("Phương thức cập nhật không tồn tại")
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn phòng ban để xóa!")
     def on_tree_select(self, event):

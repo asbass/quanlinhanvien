@@ -20,7 +20,7 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
                 str(new_department.dept_id), 
                 new_department.name
             ))
-            print("bảng lương thêm thành công record added successfully.")
+            print("bảng phòng ban thêm thành công record added successfully.")
         except Error as e:
             print(f"Error: '{e}' occurred while adding payroll")
     def get_department_name(self, department_id):
@@ -34,15 +34,10 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
             self.db.execute_query(query, (name, department_id))
         except Error as e:
             print(f"Error: '{e}' occurred while updating department")
-
     def del_department(self, department_id):
-        try:
-            # Xóa phòng ban khỏi cơ sở dữ liệu
+         # Xóa phòng ban khỏi cơ sở dữ liệu
             query = "DELETE FROM Department WHERE dept_id = %s"  # Sửa tên trường cho phù hợp
             self.db.execute_query(query, (department_id,))
-        except Error as e:
-            print(f"Error: '{e}' occurred while deleting department")
-
     def get_departments(self):
         # Lấy danh sách các phòng ban
         self.db.close_connection()

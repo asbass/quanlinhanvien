@@ -53,7 +53,26 @@ class EmployeeList:
             self.db.execute_query(query, data)
         except Exception as e:
             print("Error updating employee:", e)
+    def delete_employee(self, emp_id):
+        emp_id_str = str(emp_id)  # Chuyển đổi emp_id sang chuỗi nếu cần
+        # Kiểm tra xem nhân viên có tồn tại hay không
+        check_query = "SELECT * FROM Employee WHERE emp_id = %s"
+        existing_employee = self.db.fetch_one(check_query, (emp_id_str,))  # Sử dụng fetch_one để kiểm tra
 
+        if not existing_employee:
+            print("Không tìm thấy nhân viên với emp_id:", emp_id_str)
+            return
+    
+        # Truy vấn xóa
+        query = "DELETE FROM Employee WHERE emp_id = %s"
+        try:
+            self.db.execute_query(query, (emp_id_str,))
+            print(f"Đã xóa nhân viên có emp_id: {emp_id_str} thành công.")
+
+            # Cập nhật danh sách nhân viên trong bộ nhớ
+            self.employees = [emp for emp in self.employees if str(emp['emp_id']) != emp_id_str]  # Sử dụng emp['emp_id']
+        except Exception as e:
+            print("Lỗi khi xóa nhân viên:", e)
     def get_employee_ids(self):
         """Retrieve employee IDs from the database."""
         query = "SELECT emp_id FROM Employee"
@@ -75,27 +94,7 @@ class EmployeeList:
                 print(employee.position)
                 return employee.position  # Trả về chức vụ nếu tìm thấy
         return ''  # Nếu không tìm thấy, trả về chuỗi rỗng
-    def delete_employee(self, emp_id):
-        emp_id_str = str(emp_id)  # Chuyển đổi emp_id sang chuỗi nếu cần
-
-        # Kiểm tra xem nhân viên có tồn tại hay không
-        check_query = "SELECT * FROM Employee WHERE emp_id = %s"
-        existing_employee = self.db.fetch_one(check_query, (emp_id_str,))  # Sử dụng fetch_one để kiểm tra
-
-        if not existing_employee:
-            print("Không tìm thấy nhân viên với emp_id:", emp_id_str)
-            return
     
-        # Truy vấn xóa
-        query = "DELETE FROM Employee WHERE emp_id = %s"
-        try:
-            self.db.execute_query(query, (emp_id_str,))
-            print(f"Đã xóa nhân viên có emp_id: {emp_id_str} thành công.")
-
-            # Cập nhật danh sách nhân viên trong bộ nhớ
-            self.employees = [emp for emp in self.employees if str(emp.emp_id) != emp_id_str]
-        except Exception as e:
-            print("Lỗi khi xóa nhân viên:", e)
     def get_employeezs(self):
         return self.employees 
     def get_employees(self):

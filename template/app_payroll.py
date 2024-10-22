@@ -44,6 +44,7 @@ class PayrollApp(tk.Frame):
         tk.Label(self.frame, text="Tên Nhân Viên:").grid(row=3, column=0, padx=5, pady=5)
         self.employee_name_entry = ttk.Combobox(self.frame, state="readonly")
         self.employee_name_entry.grid(row=3, column=1, padx=5, pady=5)
+        self.employee_name_entry.set("Chọn Tên Nhân Viên") 
         self.employee_name_entry.bind("<<ComboboxSelected>>", self.on_employee_selected)
         self.loads_employee_list()
         # Nhập chức vụ
@@ -173,11 +174,14 @@ class PayrollApp(tk.Frame):
         employee_names = self.employee_list.get_employee_names()  # Get the latest employee names
         self.employee_name_entry['values'] = employee_names  # Update the UI component
         self.employee_name_entry.update()
-        if employee_names:
-            self.employee_name_entry.current(0)  # Optionally select the first employee
+        self.employee_name_entry.delete(0, tk.END)
         print("Employee list updated with the latest data from the database.")
     def update_employee_list(self, employee_list):
         self.employee_name_entry['values'] = employee_list  # Cập nhật ComboBox hoặc các thành phần khác
+        print("Danh sách nhân viên đã được cập nhật trong PayrollApp.")
+        if employee_list:
+            self.employee_name_entry.current(0)  # Tùy chọn chọn nhân viên đầu tiên
+        
         print("Danh sách nhân viên đã được cập nhật trong PayrollApp.")
     def on_key_release(self, event):
         if self.days_off_entry.get().isdigit() or self.bonus_salary_entry.get().isdigit():
