@@ -1,22 +1,28 @@
 from enity.department import Department  # Chắc chắn rằng đường dẫn nhập đúng
 from mysql.connector import Error
 from service.connect_sql import DatabaseConnection
-
-class departmentList:  # Đặt tên lớp với chữ cái đầu viết hoa theo quy tắc PEP 8
+from enity.Payroll import Payroll
+class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa theo quy tắc PEP 8
     def __init__(self):
         self.db = DatabaseConnection()  # Khởi tạo kết nối với cơ sở dữ liệu
         self.db.connect()  # Kết nối đến cơ sở dữ liệu
-            
-    def add_department(self, name):
+    def add_department(self,name):
         try:
-            # Tạo một đối tượng Department mới
+            # Tạo một đối tượng Payroll mới
             new_department = Department(name)
             
-            # Thêm phòng ban vào cơ sở dữ liệu
-            query = "INSERT INTO Department (dept_id, name) VALUES (%s, %s)"
-            self.db.execute_query(query, (str(new_department.dept_id), new_department.name))
+            # Thêm bảng lương vào cơ sở dữ liệu
+            query = '''
+                INSERT INTO Department (dept_id,name)
+                VALUES (%s, %s);
+            '''
+            self.db.execute_query(query, (
+                str(new_department.dept_id), 
+                new_department.name
+            ))
+            print("Payroll record added successfully.")
         except Error as e:
-            print(f"Error: '{e}' occurred while adding department")
+            print(f"Error: '{e}' occurred while adding payroll")
     def get_department_name(self, department_id):
         query = "SELECT name FROM Department WHERE dept_id = ?"
         self.db.execute_query(query, (department_id,))

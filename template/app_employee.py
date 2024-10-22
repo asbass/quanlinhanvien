@@ -4,6 +4,7 @@ from enity.employee import Employee
 from service.employee_list import EmployeeList
 from service.department_list import departmentList
 from service.posittion_list import PositionList
+from .app_payroll import PayrollApp
 class EmployeeApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -82,20 +83,25 @@ class EmployeeApp(tk.Frame):
         position = self.position_combobox.get()
 
         # Kiểm tra điều kiện nhập liệu
-        if not name or not age or department == "Chọn Phòng Ban" or not position :
+        if not name or not age or department == "Chọn Phòng Ban" or not position:
             messagebox.showwarning("Cảnh Báo", "Vui lòng nhập đầy đủ thông tin!")
         elif not age.isdigit():
             messagebox.showwarning("Cảnh Báo", "Tuổi phải là số")
         elif int(age) < 18 or int(age) > 60:
             messagebox.showwarning("Cảnh Báo", "Tuổi phải lớn hơn 18 và nhỏ hơn 60!")
-        
         else:
-            self.employee_list.add_employee(name, age, department, position)
-            self.update_treeview()
-            self.clear_entries()
-            if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
-                self.master.master.update_employee_list_in_employee_app()
-        
+            try:
+                # Thêm nhân viên vào danh sách
+                self.employee_list.add_employee(name, age, department, position)
+                self.update_treeview()  # Cập nhật cây hiển thị danh sách nhân viên
+                self.clear_entries()  # Xóa các trường nhập liệu
+                print("du lieu dag them ",self.employee_list.load_employees_from_db())
+                # Cập nhật danh sách nhân viên từ cơ sở dữ liệu
+                if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
+                    self.master.master.update_employee_list_in_employee_app()
+                    print("Nhân viên đã được thêm thành công và danh sách đã được cập nhật.")
+            except Exception as e:
+                print(f"Lỗi khi thêm nhân viên: {e}")
     def update_employee(self):
         selected_item = self.tree.selection()  # This returns a tuple of selected item IDs
         if not selected_item:

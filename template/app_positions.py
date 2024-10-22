@@ -8,35 +8,45 @@ class PositonsApp(tk.Frame):
         super().__init__(parent)
         
         self.position_list = PositionList()  # Khởi tạo PositionList
+        
+       # Khung nhập liệu
+        self.frame = tk.Frame(self)
+        self.frame.pack(pady=10, padx=10, fill=tk.X)  # Thay đổi sang pack
 
-        # Các trường nhập liệu (2 cột)
-        tk.Label(self, text="Tên Chức Vụ:").grid(row=1, column=0, padx=5, pady=5)
-        self.entry_name = tk.Entry(self)
-        self.entry_name.grid(row=1, column=1, padx=5, pady=5)
+        # Các trường nhập liệu (sử dụng pack)
+        input_frame = tk.Frame(self.frame)  # Tạo frame mới cho các trường nhập liệu
+        input_frame.pack(fill=tk.X, padx=5, pady=5)  # Sử dụng pack
 
-        tk.Label(self, text="Hệ Số Lương:").grid(row=1, column=2, padx=5, pady=5)
-        self.entry_salary_coefficient = tk.Entry(self)
-        self.entry_salary_coefficient.grid(row=1, column=3, padx=5, pady=5)
+        tk.Label(input_frame, text="Tên Chức Vụ:").pack(side=tk.LEFT, padx=5)
+        self.entry_name = tk.Entry(input_frame)
+        self.entry_name.pack(side=tk.LEFT,fill=tk.X, expand=True, padx=5)
 
-        # Khung chứa các nút (Thêm, Sửa, Xóa)
-        button_frame = tk.Frame(self)
-        button_frame.grid(row=2, columnspan=4, pady=10)
+        tk.Label(input_frame, text="Hệ Số Lương:").pack(side=tk.LEFT, padx=5)
+        self.entry_salary_coefficient = tk.Entry(input_frame)
+        self.entry_salary_coefficient.pack(side=tk.LEFT,fill=tk.X, expand=True, padx=5)
+
+        # Khung chứa các nút (Thêm, Sửa, Xóa) - sử dụng pack
+        button_frame = tk.Frame(self.frame)
+        button_frame.pack(pady=10)  # Sử dụng pack để quản lý nút
 
         # Nút thêm
         self.add_button = tk.Button(button_frame, text="Thêm Chức Vụ", command=self.add_position)
-        self.add_button.grid(row=0, column=0, padx=10)
+        self.add_button.pack(side=tk.LEFT, padx=10)
 
         # Nút sửa
         self.update_button = tk.Button(button_frame, text="Sửa Chức Vụ", command=self.update_position)
-        self.update_button.grid(row=0, column=1, padx=10)
+        self.update_button.pack(side=tk.LEFT, padx=10)
 
         # Nút xóa
         self.delete_button = tk.Button(button_frame, text="Xóa Chức Vụ", command=self.delete_position)
-        self.delete_button.grid(row=0, column=2, padx=10)
+        self.delete_button.pack(side=tk.LEFT, padx=10)
 
-        # Cây để hiển thị chức vụ
-        self.tree = ttk.Treeview(self, columns=("ID", "Tên Chức Vụ", "Hệ Số Lương"), show="headings")
-        self.tree.grid(row=3, column=0, columnspan=4, pady=10)
+        # Cây để hiển thị chức vụ (Cũng sử dụng pack)
+        tree_frame = tk.Frame(self)  # Tạo frame để chứa Treeview
+        tree_frame.pack(pady=10, fill=tk.BOTH, expand=True)  # Sử dụng pack
+
+        self.tree = ttk.Treeview(tree_frame, columns=("ID", "Tên Chức Vụ", "Hệ Số Lương"), show="headings")
+        self.tree.pack(fill=tk.BOTH, expand=True)  # Sử dụng pack
 
         # Đặt tiêu đề cho các cột
         for col in self.tree['columns']:
@@ -46,7 +56,6 @@ class PositonsApp(tk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)  # Liên kết sự kiện chọn
 
         self.refresh_treeview()  # Tải dữ liệu chức vụ khi khởi động
-
     def on_tree_select(self, event):
         """Xử lý sự kiện chọn một chức vụ trong cây."""
         selected_item = self.tree.selection()

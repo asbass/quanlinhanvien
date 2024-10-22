@@ -5,4 +5,4 @@ class Department:
         self.dept_id = uuid.uuid4()  # Tạo UUID cho dept_id
         self.name = name
     def __repr__(self):
-        return f"Department(ID: {self.dept_id}, Name: {self.name}, Positions: {self.positions})"
+        return f"Department(ID: {self.dept_id}, Name: {self.name})"

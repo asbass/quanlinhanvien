@@ -24,16 +24,11 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.load_employee_data() 
         self.emp_id_combobox.bind("<<ComboboxSelected>>", self.on_combobox_select)
 
-        # Ô nhập Time
-        tk.Label(self, text="Time (DD/MM/YYYY):").grid(row=1, column=0, padx=5, pady=5, sticky='w')
-        self.selected_date_label = tk.Label(self, text=f"{datetime.datetime.now().strftime('%d/%m/%Y')}")  # Định dạng ngày
-        self.selected_date_label.grid(row=1, column=1, sticky='w')
-
         icon_calendar_path = os.path.join(os.path.dirname(__file__), '..', 'image', 'calendar.png')
         image_icon_calendar = Image.open(icon_calendar_path)
         resized_image = image_icon_calendar.resize((25, 25), Image.Resampling.LANCZOS)
         self.icon_calendar = ImageTk.PhotoImage(resized_image)
-        self.show_calendar_button = tk.Button(self, image=self.icon_calendar, command=self.show_calendar_dialog)
+        self.show_calendar_button = tk.Button(self.input_frame, image=self.icon_calendar, command=self.show_calendar_dialog)
         self.show_calendar_button.grid(row=1, column=2, sticky='w', padx=(0, 5))
 
         # Ô nhập Status
@@ -43,32 +38,32 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.status_entry.set('None')
 
         # Ô nhập Reason
-        tk.Label(self, text="Reason:").grid(row=3, column=0, padx=5, pady=5, sticky='w')
-        self.reason_entry = tk.Entry(self)
+        tk.Label(self.input_frame, text="Reason:").grid(row=3, column=0, padx=5, pady=5, sticky='w')
+        self.reason_entry = tk.Entry(self.input_frame)
         self.reason_entry.grid(row=3, column=1, padx=5, pady=5)
 
         # Ô nhập Type Off
-        tk.Label(self, text="Type Off:").grid(row=4, column=0, padx=5, pady=5, sticky='w')
-        self.typeOff_entry = ttk.Combobox(self, values=["OFF", "OT", "WFH"])
+        tk.Label(self.input_frame, text="Type Off:").grid(row=4, column=0, padx=5, pady=5, sticky='w')
+        self.typeOff_entry = ttk.Combobox(self.input_frame, values=["OFF", "OT", "WFH"])
         self.typeOff_entry.grid(row=4, column=1, padx=5, pady=5)
         self.typeOff_entry.set("OFF")
 
         # Ô nhập Type Time
-        tk.Label(self, text="Type Time:").grid(row=5, column=0, padx=5, pady=5, sticky='w')
-        self.typeTime_entry = ttk.Combobox(self, values=["AM", "PM", "DAY"])
+        tk.Label(self.input_frame, text="Type Time:").grid(row=5, column=0, padx=5, pady=5, sticky='w')
+        self.typeTime_entry = ttk.Combobox(self.input_frame, values=["AM", "PM", "DAY"])
         self.typeTime_entry.grid(row=5, column=1, padx=5, pady=5)
         self.typeTime_entry.set("DAY")
 
         # Nút Thêm
-        self.add_button = tk.Button(self, text="Thêm", command=self.add_working_time)
+        self.add_button = tk.Button(self.input_frame, text="Thêm", command=self.add_working_time)
         self.add_button.grid(row=6, column=0, pady=5, sticky='w')
 
         # Nút Xóa
-        self.delete_button = tk.Button(self, text="Xóa", command=self.delete_working_time)
+        self.delete_button = tk.Button(self.input_frame, text="Xóa", command=self.delete_working_time)
         self.delete_button.grid(row=6, column=1, pady=5, sticky='w')
 
         # Nút Sửa
-        self.edit_button = tk.Button(self, text="Sửa", command=self.update_working_time)
+        self.edit_button = tk.Button(self.input_frame, text="Sửa", command=self.update_working_time)
         self.edit_button.grid(row=6, column=2, pady=5, sticky='w')
 
         # Tạo Treeview để hiển thị dữ liệu
@@ -80,13 +75,13 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.tree.heading("Reason", text="Reason")
         self.tree.heading("Type Off", text="Type Off")
         self.tree.heading("Type Time", text="Type Time")
-        self.tree.grid(row=9, column=0, columnspan=2)  
+        self.tree.pack(pady=10, fill='both', expand=True)
         self.tree.tag_configure("center", anchor="center")
         self.update_treeview()
         self.tree.bind("<Double-1>", self.on_tree_select)
 
-        self.grid_rowconfigure(9, weight=1)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
 
     def load_employee_data(self):
