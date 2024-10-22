@@ -180,3 +180,15 @@ class WorkingTimeService:
     # def get_off_days_by_employee(self, emp_id):
     #     # Lọc danh sách ngày nghỉ theo emp_id
     #     return [wt.time for wt in self.working_time_list if wt.emp_id == emp_id]
+    def get_days_off(self, emp_id, month, year):
+        query = """
+            SELECT COUNT(*) AS days_off
+            FROM WorkingTime
+            WHERE emp_id = %s 
+            AND MONTH(time) = %s 
+            AND YEAR(time) = %s
+        """
+        result = self.db.fetch_one(query, (emp_id, month, year))  # Truyền đủ tham số
+        
+        # Trả về số ngày nghỉ, sử dụng 'days_off' thay vì 'name'
+        return result['days_off'] if result else 0  # Trả về 0 nếu không có kết quả

@@ -171,12 +171,9 @@ class PayrollApp(tk.Frame):
         self.is_employee_list_loaded = False
         """Tải danh sách nhân viên chỉ một lần."""
         if not self.is_employee_list_loaded:
-            print("Loading employee list from database...")  # Debug
             self.employee_list.load_employees_from_db()
-            print(f"Employee list after loading: {self.employee_list.get_employees()}")  # Debug
             self.is_employee_list_loaded = True
-        else:
-            print(f"Employee list is already loaded: {self.employee_list.get_employees()}")  # Debug
+
             
     def loads_employee_list(self):
         employee_names = self.employee_list.get_employee_name()  # Get the latest employee names

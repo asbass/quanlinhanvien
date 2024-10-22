@@ -20,7 +20,7 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
                 str(new_department.dept_id), 
                 new_department.name
             ))
-            print("Payroll record added successfully.")
+            print("bảng lương thêm thành công record added successfully.")
         except Error as e:
             print(f"Error: '{e}' occurred while adding payroll")
     def get_department_name(self, department_id):
@@ -45,6 +45,8 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
 
     def get_departments(self):
         # Lấy danh sách các phòng ban
+        self.db.close_connection()
+        self.db.connect()
         query = "SELECT * FROM Department"
         return self.db.fetch_all(query)
     def get_department_by_id(self, dept_id):
@@ -54,7 +56,7 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
     def get_department_names(self):
             departments = self.get_departments()
             return [department['name'] for department in departments if 'name' in department]  # Safety check for 'name'
-
+    
     # Other methods...
 
     def close_connection(self):

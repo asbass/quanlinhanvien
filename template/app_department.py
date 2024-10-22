@@ -45,12 +45,12 @@ class DepartmentApp(tk.Frame):
     def add_department(self):
         name = self.name_entry.get()
         if name:
-            
+            print(f"Adding department: {name}")  # Debug print
             self.department_list.add_department(name)
             self.update_treeview()
             self.clear_entries()
-            # if hasattr(self.master.master, 'update_department_list_in_employee_app'):
-            #     self.master.master.update_department_list_in_employee_app()
+            if hasattr(self.master.master, 'update_department_list_in_department_app'):
+                self.master.master.update_department_list_in_department_app()
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng nhập tên phòng ban!")
     def update_department(self):
@@ -62,6 +62,8 @@ class DepartmentApp(tk.Frame):
                 self.department_list.update_department(dept_id, name)  # Sử dụng dept_id
                 self.update_treeview()
                 self.clear_entries()
+                if hasattr(self.master.master, 'update_department_list_in_department_app'):
+                    self.master.master.update_department_list_in_department_app()
             else:
                 messagebox.showwarning("Cảnh Báo", "Vui lòng nhập tên phòng ban!")
         else:
@@ -70,11 +72,11 @@ class DepartmentApp(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             dept_id = self.tree.item(selected_item)["values"][0]  # Lấy mã phòng ban
-            self.department_list.del_department(dept_id)
-            self.update_treeview()
-            self.clear_entries()
-            # if hasattr(self.master.master, 'update_department_list_in_employee_app'):
-            #     self.master.master.update_department_list_in_employee_app()
+            self.department_list.del_department(dept_id)  # Xóa phòng ban
+            self.update_treeview()  # Cập nhật treeview
+            self.clear_entries()  # Xóa các trường nhập liệu
+            if hasattr(self.master.master, 'update_department_list_in_employee_app'):
+                self.master.master.update_department_list_in_employee_app()  # Cập nhật combobox
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn phòng ban để xóa!")
     def on_tree_select(self, event):

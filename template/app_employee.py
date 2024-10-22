@@ -95,7 +95,6 @@ class EmployeeApp(tk.Frame):
                 self.employee_list.add_employee(name, age, department, position)
                 self.update_treeview()  # Cập nhật cây hiển thị danh sách nhân viên
                 self.clear_entries()  # Xóa các trường nhập liệu
-                print("du lieu dag them ",self.employee_list.load_employees_from_db())
                 # Cập nhật danh sách nhân viên từ cơ sở dữ liệu
                 if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
                     self.master.master.update_employee_list_in_employee_app()
@@ -272,9 +271,13 @@ class EmployeeApp(tk.Frame):
                 department_name,  # Hiển thị tên phòng ban
                 positons_name
             ))
-    def update_department_list(self, department_list):
-        self.department_combobox['values'] = [dept.name for dept in department_list]
+    def update_positon_list(self, Position_names):
+        self.position_combobox['values'] = Position_names
         print("Danh sách phòng ban đã được cập nhật.")
+    def update_department_list(self, department_list):
+        self.department_combobox['values'] = department_list
+        print("Danh sách phòng ban đã được cập nhật.")
+
     def load_Department_names(self):
         Department_names = self.department_list.get_department_names()  # Giả sử có phương thức này
         self.department_combobox['values'] = Department_names
