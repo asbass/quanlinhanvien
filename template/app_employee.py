@@ -132,6 +132,9 @@ class EmployeeApp(tk.Frame):
                 self.employee_list.update_employee(emp_id, name, age, department, position)  
                 self.update_treeview()  # Refresh the interface
                 self.clear_entries()  # Clear input fields
+                if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
+                    self.master.master.update_employee_list_in_employee_app()
+                    print("Nhân viên đã được thêm thành công và danh sách đã được cập nhật.")
             except Exception as e:
                 messagebox.showerror("Lỗi", str(e))
                 print(str(e))
@@ -148,6 +151,9 @@ class EmployeeApp(tk.Frame):
                 emp_id = self.tree.item(selected_item[0], 'values')[0]  # Lấy ID nhân viên từ Treeview
                 self.employee_list.delete_employee(emp_id)  # Gọi phương thức xóa
                 self.update_treeview()  # Cập nhật giao diện sau khi xóa
+                if hasattr(self.master.master, 'update_employee_list_in_employee_app'):
+                    self.master.master.update_employee_list_in_employee_app()
+                    print("Nhân viên đã được thêm thành công và danh sách đã được cập nhật.")
         else:
             messagebox.showwarning("Cảnh Báo", "Vui lòng chọn nhân viên để xóa!")
 
