@@ -12,7 +12,7 @@ from template.app_manager_working_time_tab import ManagerWorkingTimeTab
 class WokingTimeApp(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-        self.working_time = WorkingTimeService()
+        self.working_time = WorkingTimeService()  # This creates an instance of WorkingTimeService
         self.employee_list = EmployeeList() 
         label = tk.Label(self, text="Quản lý thời gian làm việc")
         label.pack(padx=5, pady=5)
@@ -39,3 +39,5 @@ class WokingTimeApp(tk.Frame):
     def set_to_tab_default(self):
         # Đặt lại tab con về B1
         self.notebook.select(self.tab1)
+    def close_connection(self):
+        self.working_time.close_connection()  # This should be correct

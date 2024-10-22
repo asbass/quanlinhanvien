@@ -181,6 +181,8 @@ class EmployeeList:
         return result['position_id'] if result else None
     def close_connection(self):
         self.db.close_connection()  # Đóng kết nối khi không còn sử dụng
+        print("EmployeeList connection closed.")
+
     def get_employee_id_by_name(self, name):
         self.db.close_connection()
         self.db.connect()
@@ -216,4 +218,19 @@ class EmployeeList:
 
             print("Không có nhân viên nào trong cơ sở dữ liệu.")
             return []  # Trả về danh sách rỗng nếu không có nhân viên
+    def employee_count_by_department_chart(self):
+        query = """
+        SELECT d.name AS department, COUNT(e.emp_id) AS count 
+        FROM Employee e
+        JOIN Department d ON e.department_id = d.dept_id
+        GROUP BY d.name;
+        """
+        return self.db.fetch_all(query)
+    def total_salary_by_department_chart(self):
+       
+        query = "SELECT d.name, SUM(p.basic_salary + p.reward) AS total_salary FROM Employee e JOIN Payroll p ON e.emp_id = p.emp_id JOIN Department d ON e.department_id = d.dept_id GROUP BY d.name;"
+        return self.db.fetch_all(query)  # Lấy dữ liệu từ database
+    def salary_percentage_by_department_chart(self):
+        query = "SELECT d.name, SUM(p.basic_salary + p.reward) AS total_salary FROM Employee e JOIN Payroll p ON e.emp_id = p.emp_id JOIN Department d ON e.department_id = d.dept_id GROUP BY d.name;"
+        return self.db.fetch_all(query)  # Lấy dữ liệu từ database
 

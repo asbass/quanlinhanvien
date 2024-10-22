@@ -6,6 +6,9 @@ from template.app_working_time import WokingTimeApp
 from template.app_payroll import PayrollApp
 from service.employee_list import EmployeeList
 from template.app_positions import PositonsApp
+from template.app_chart import EmployeeCharts
+import sys
+
 class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -22,14 +25,48 @@ class MainApp(tk.Tk):
         self.working_time_tab = WokingTimeApp(self.tab_control)
         self.Payroll_tab = PayrollApp(self.tab_control)
         self.Position_tab = PositonsApp(self.tab_control)
+        self.statistics_tab = EmployeeCharts(self.tab_control)  # Thêm tab thống kê
+
         # Thêm các tab vào tab_control
         self.tab_control.add(self.employee_tab, text="Nhân Viên")
         self.tab_control.add(self.department_tab, text="Phòng Ban")
         self.tab_control.add(self.working_time_tab, text="Thời gian làm việc")
         self.tab_control.add(self.Payroll_tab, text="Bảng lương")
         self.tab_control.add(self.Position_tab, text="Chức Vụ")
+        self.tab_control.add(self.statistics_tab, text="Thống Kê")  # Thêm vào đây
+
         # Đặt tab_control vào giao diện
         self.tab_control.pack(expand=1, fill="both")
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+    def on_closing(self):
+        print("Closing application...")
+        try:
+            # Đóng kết nối trong các tab
+            self.department_tab.close_connection()  
+            print("DepartmentApp connection closed.")
+            
+            self.employee_tab.close_connection()  
+            print("EmployeeApp connection closed.")
+            
+            self.Position_tab.close_connection()
+            print("PositionsApp connection closed.")
+            
+            self.working_time_tab.close_connection()  
+            print("WorkingTimeApp connection closed.")
+            
+            self.Payroll_tab.close_connection()     
+            print("PayrollApp connection closed.")
+            
+            self.statistics_tab.close_connection()
+            print("StatisticsApp connection closed.")
+            
+            print("All connections closed. Destroying application...")
+        except Exception as e:
+            print(f"Error while closing: {e}")
+        finally:
+            self.destroy()  # Đóng ứng dụng
+            sys.exit()  # Thoát hoàn toàn khỏi chương trình
+
 
     def update_employee_list_in_employee_app(self):
         employee_list = self.employee_tab.employee_list.get_employee_names()  # Truy cập từ department_tab
