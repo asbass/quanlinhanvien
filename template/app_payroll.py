@@ -20,7 +20,6 @@ class PayrollApp(tk.Frame):
         self.posittion_list = PositionList()
         self.workingtime_list = WorkingTimeService()
         self.is_employee_list_loaded = False
-
         # Khung nhập liệu
         self.frame = tk.Frame(self)
         self.frame.pack(pady=10)
@@ -46,7 +45,7 @@ class PayrollApp(tk.Frame):
         self.employee_name_entry = ttk.Combobox(self.frame, state="readonly")
         self.employee_name_entry.grid(row=3, column=1, padx=5, pady=5)
         self.employee_name_entry.bind("<<ComboboxSelected>>", self.on_employee_selected)
-        self.update_employee_list()
+        self.loads_employee_list()
         # Nhập chức vụ
         tk.Label(self.frame, text="Chức vụ:").grid(row=4, column=0, padx=5, pady=5)
         self.position_entry = tk.Entry(self.frame, state='readonly')  # Trường chức vụ chỉ đọc
@@ -167,14 +166,31 @@ class PayrollApp(tk.Frame):
             messagebox.showerror("Lỗi", f"Đã xảy ra lỗi khi thêm bảng lương: {e}")
         self.clear_entries()
     def update_employee_position(self):
+        # Nếu không có danh sách nhân viên, thì buộc tải từ cơ sở dữ liệu
+        
         self.is_employee_list_loaded = False
-        self.load_employee_list()
-    def update_employee_list(self):
+        """Tải danh sách nhân viên chỉ một lần."""
+        if not self.is_employee_list_loaded:
+            print("Loading employee list from database...")  # Debug
+            self.employee_list.load_employees_from_db()
+            print(f"Employee list after loading: {self.employee_list.get_employees()}")  # Debug
+            self.is_employee_list_loaded = True
+        else:
+            print(f"Employee list is already loaded: {self.employee_list.get_employees()}")  # Debug
+            
+    def loads_employee_list(self):
         employee_names = self.employee_list.get_employee_name()  # Get the latest employee names
         self.employee_name_entry['values'] = employee_names  # Update the UI component
+        self.employee_name_entry.update()
         if employee_names:
             self.employee_name_entry.current(0)  # Optionally select the first employee
         print("Employee list updated with the latest data from the database.")
+    def update_employee_list(self, employee_list):
+        employee_names = [employee['name'] for employee in employee_list]  # Lấy tên nhân viên
+        self.employee_name_entry['values'] = employee_names  # Cập nhật ComboBox hoặc các thành phần khác
+        if employee_names:
+            self.employee_name_entry.current(0)  # Tùy chọn chọn nhân viên đầu tiên
+        print("Danh sách nhân viên đã được cập nhật trong PayrollApp.")
     def on_key_release(self, event):
         if self.days_off_entry.get().isdigit() or self.bonus_salary_entry.get().isdigit():
             self.calculate_salary()
@@ -206,7 +222,7 @@ class PayrollApp(tk.Frame):
         self.employee_name_entry.config(state='readonly')
         # Tìm nhân viên tương ứng trong danh sách nhân viên
         selected_employee = self.employee_list.get_employee_id_by_name(selected_employee_name)
-        
+        print(selected_employee)
 
         if selected_employee:
             emp_id = selected_employee['emp_id']  # Lấy emp_id từ kết quả
@@ -214,7 +230,7 @@ class PayrollApp(tk.Frame):
             
             # Lấy thông tin chức vụ từ position_id
             position = self.posittion_list.get_position_by_emp_id(position_id)
-
+            
             if position:  # Đảm bảo position là một đối tượng Position
                 print("Chức vụ:", position.name)
                 salary_multiplier = position.salary_multiplier  # Lấy salary_multiplier từ đối tượng Position
@@ -289,10 +305,5 @@ class PayrollApp(tk.Frame):
                 payroll.day_off,
                 net_salary_formatted
             ))
-    def load_employee_list(self):
-        """Tải danh sách nhân viên chỉ một lần."""
-        if not self.is_employee_list_loaded:
-            # self.employee_list.clear_employee_list()
-            self.employee_list.load_employees_from_db()
-            self.is_employee_list_loaded = True
-  
+        
+           

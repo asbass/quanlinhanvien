@@ -30,17 +30,18 @@ class DatabaseConnection:
             print("The database connection has been closed.")
 
     def execute_query(self, query, data=None):
-        """Execute a SQL query with optional parameters."""
         cursor = self.connection.cursor()
         try:
             if data:
                 cursor.execute(query, data)
             else:
                 cursor.execute(query)
-            self.connection.commit()
-            print("Query executed successfully.")
+            self.connection.commit()  # Lưu thay đổi
+            print("Query executed and committed successfully.")
         except Error as e:
             print(f"Error: '{e}' occurred during query execution")
+            self.connection.rollback()  # Khôi phục thay đổi
+            print("Transaction rolled back.")
         finally:
             cursor.close()
     def fetch_one(self, query, data=None):
@@ -73,4 +74,9 @@ class DatabaseConnection:
             return []
         finally:
             cursor.close()
-
+    def commit(self):
+        if self.connection and self.connection.is_connected():
+            self.connection.commit()
+            print("Commit successful.")
+        else:
+            print("No active connection to commit.")

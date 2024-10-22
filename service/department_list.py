@@ -6,26 +6,19 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
     def __init__(self):
         self.db = DatabaseConnection()  # Khởi tạo kết nối với cơ sở dữ liệu
         self.db.connect()  # Kết nối đến cơ sở dữ liệu
-            
-    def add_payroll(self, emp_id, month, year, day_off, basic_salary, reward, net_salary):
+    def add_department(self,name):
         try:
             # Tạo một đối tượng Payroll mới
-            new_payroll = Payroll(emp_id, month, year, day_off, basic_salary, reward, net_salary)
+            new_department = Department(name)
             
             # Thêm bảng lương vào cơ sở dữ liệu
             query = '''
-                INSERT INTO Payroll (payroll_id, emp_id, month, year, day_off, basic_salary, reward, net_salary)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+                INSERT INTO Department (dept_id,name)
+                VALUES (%s, %s);
             '''
             self.db.execute_query(query, (
-                str(new_payroll.payroll_id), 
-                new_payroll.emp_id, 
-                new_payroll.month, 
-                new_payroll.year, 
-                new_payroll.day_off, 
-                new_payroll.basic_salary, 
-                new_payroll.reward, 
-                new_payroll.net_salary
+                str(new_department.dept_id), 
+                new_department.name
             ))
             print("Payroll record added successfully.")
         except Error as e:

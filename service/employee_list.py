@@ -32,6 +32,8 @@ class EmployeeList:
         """
         data = (str(new_employee.emp_id), new_employee.name, new_employee.age, new_employee.department, new_employee.position)
         self.db.execute_query(query, data)
+        print(f"Inserting employee: {new_employee.name}")  # Debug
+
     def update_employee(self, emp_id, name, age, department, position):
         emp_id_str = str(emp_id)
         # Debugging: Print the current employee IDs
@@ -104,8 +106,9 @@ class EmployeeList:
             self.employees = [emp for emp in self.employees if str(emp.emp_id) != emp_id_str]
         except Exception as e:
             print("Lỗi khi xóa nhân viên:", e)
+    def get_employeezs(self):
+        return self.employees 
     def get_employees(self):
-        # Lấy danh sách các phòng ban
         query = "SELECT * FROM Employee"
         return self.db.fetch_all(query)
     def get_employee_by_id(self, emp_id):
@@ -134,16 +137,29 @@ class EmployeeList:
 
 
     def load_employees_from_db(self):
-            """Load employees from the database."""
-            query = "SELECT * FROM Employee"
-            rows = self.db.fetch_all(query)
-            for row in rows:
-                # Lấy tên phòng ban và chức vụ từ ID
-                department_name = self.get_department_name_by_id(row['department_id'])
-                position_name = self.get_position_name_by_id(row['position_id'])
+        """Load employees from the database."""
+        query = "SELECT * FROM Employee"
+        rows = self.db.fetch_all(query)
+        print(f"Rows fetched from database: {rows}")  # Debugging step
+        
+        self.employees.clear()  # Xóa danh sách nhân viên cũ
+        
+        for row in rows:
+            # Lấy tên phòng ban và chức vụ từ ID
+            department_name = self.get_department_name_by_id(row['department_id'])
+            position_name = self.get_position_name_by_id(row['position_id'])
+            # Tạo đối tượng nhân viên với đầy đủ thông tin
+            emp = {
+                'emp_id': row['emp_id'],
+                'name': row['name'],
+                'age': row['age'],
+                'department_name': department_name,  # Lưu tên phòng ban
+                'position_name': position_name      # Lưu tên chức vụ
+            }
+            # Thêm nhân viên vào danh sách
+            self.employees.append(emp)
 
-                emp = Employee(row['name'], row['age'], department_name, position_name)
-                self.employees.append(emp)
+        print(f"Updated employee list: {self.employees}")  # Debugging step
     def get_department_name_by_id(self, department_id):
         query = "SELECT name FROM Department WHERE dept_id = %s"
         result = self.db.fetch_one(query, (department_id,))
@@ -177,21 +193,32 @@ class EmployeeList:
     def get_employee_id_by_name(self, name):
         # Truy vấn để lấy emp_id dựa trên name
         query = "SELECT emp_id, position_id FROM Employee WHERE name = %s"
-        result = self.db.fetch_one(query, (name,))  # Lưu ý cú pháp với %s nếu sử dụng MySQL connector
-
+        result = self.db.fetch_one(query, (name,))
+        print("da duoc load lai")
+        print(name)
         if result:
             return result  # Trả về một từ điển chứa emp_id và position_id
         else:
-            print("Không tìm thấy nhân viên với tên:", name)
-            return None  # Trả về None nếu không tìm thấy
+            print("Không tìm thấy nhân viên với tên:", name)  # Xem xét thêm thông tin
+            return None
     def get_employee_name_by_id(self, emp_id):
         # Truy vấn để lấy emp_id dựa trên name
         query = "SELECT name FROM Employee WHERE emp_id = %s"
         result = self.db.fetch_one(query, (emp_id,))  # Lưu ý cú pháp với %s nếu sử dụng MySQL connector
-
+    
         return result['name'] if result else None
     def get_employee_info(self, employee_name):
         query = "SELECT * FROM Employee WHERE name = %s"  # Truy vấn để lấy thông tin nhân viên
         return self.db.fetch_one(query, (employee_name,))  # Trả về thông tin của nhân viên
+    def get_all_employees(self):
+        """Lấy tất cả nhân viên từ cơ sở dữ liệu."""
+        query = "SELECT name FROM Employee"
+        results = self.db.fetch_all(query)  # Lấy tất cả kết quả từ bảng Employee
 
-        
+        print("Kết quả truy vấn:", results)  # In kết quả ra để kiểm tra
+        if results:  # Kiểm tra xem có kết quả không
+            # Sử dụng khóa để truy cập tên nhân viên
+            return [{"name": row['name']} for row in results]  # Trả về danh sách các từ điển chứa tên nhân viên
+        else:
+            print("Không có nhân viên nào trong cơ sở dữ liệu.")
+            return []  # Trả về danh sách rỗng nếu không có nhân viên
