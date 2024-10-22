@@ -15,10 +15,11 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.working_time = WorkingTimeService()
         self.employee_list = EmployeeList()
         # self.load_employee_data()
-
+        self.input_frame = tk.Frame(self)
+        self.input_frame.pack(padx=10, pady=10)
         # Ô nhập Emp Name
-        tk.Label(self, text="Emp Name:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
-        self.emp_id_combobox = ttk.Combobox(self)
+        tk.Label(self.input_frame, text="Emp Name:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
+        self.emp_id_combobox = ttk.Combobox(self.input_frame)
         self.emp_id_combobox.grid(row=0, column=1, padx=5, pady=5)
 
         self.load_employee_data() 
@@ -32,9 +33,9 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.show_calendar_button.grid(row=1, column=2, sticky='w', padx=(0, 5))
 
         # Ô nhập Status
-        tk.Label(self, text="Status:").grid(row=2, column=0, padx=5, pady=5, sticky='w')
-        self.status_entry = ttk.Combobox(self, values=["Đồng ý", "Từ chối", 'None'])
-        self.status_entry.grid(row=2, column=1, padx=5, pady=5)
+        tk.Label(self.input_frame, text="Status:").grid(row=1, column=0, padx=5, pady=5, sticky='w')
+        self.status_entry = ttk.Combobox(self.input_frame, values=["Dòng ý", "Từ chối", "None"])
+        self.status_entry.grid(row=1, column=1, padx=5, pady=5)
         self.status_entry.set('None')
 
         # Ô nhập Reason
