@@ -5,6 +5,7 @@ from tkinter import ttk
 from service.employee_list import EmployeeList
 from service.Payroll_list import PayrollList
 from service.connect_sql import DatabaseConnection
+import mplcursors  # Thêm dòng này
 
 class EmployeeCharts(tk.Frame):
     def __init__(self, parent):
@@ -17,8 +18,20 @@ class EmployeeCharts(tk.Frame):
 
     def create_widgets(self):
         """Tạo các widget cho giao diện."""
-        self.main_frame = tk.Frame(self)
-        self.main_frame.pack(pady=20, padx=20)
+        # Tạo một canvas cho việc cuộn
+        self.canvas = tk.Canvas(self)
+        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = tk.Frame(self.canvas)
+
+        # Thiết lập canvas và frame có thể cuộn
+        self.scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Đặt layout cho canvas và scrollbar
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.create_chart_frames()
 
@@ -29,18 +42,28 @@ class EmployeeCharts(tk.Frame):
         self.create_employee_trend_chart()
 
     def create_chart_frames(self):
-        """Tạo các frame cho biểu đồ và chia đều chúng trong frame chính."""
-        self.bar_chart_frame = tk.Frame(self.main_frame)
-        self.bar_chart_frame.grid(row=0, column=0, padx=10, pady=5, sticky='nsew')  
-        self.main_frame.grid_columnconfigure(0, weight=1)  
+        """Tạo các frame cho biểu đồ và chia đều chúng trong frame chính."""    
+        # Frame cho biểu đồ cột số nhân viên và tổng lương
+        self.bar_chart_frame_1 = tk.Frame(self.scrollable_frame)
+        self.bar_chart_frame_1.grid(row=0, column=0, padx=10, pady=5, sticky='nsew')  
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)  # Chia cột đều
 
-        self.line_chart_frame = tk.Frame(self.main_frame)
-        self.line_chart_frame.grid(row=0, column=1, padx=10, pady=5, sticky='nsew')  
-        self.main_frame.grid_columnconfigure(1, weight=1)  
+        self.bar_chart_frame_2 = tk.Frame(self.scrollable_frame)
+        self.bar_chart_frame_2.grid(row=0, column=1, padx=10, pady=5, sticky='nsew')  
+        self.scrollable_frame.grid_columnconfigure(1, weight=1)  # Chia cột đều
 
+        # Frame cho biểu đồ đường
+        self.line_chart_frame_1 = tk.Frame(self.scrollable_frame)
+        self.line_chart_frame_1.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)  # Đặt trọng số cột cho biểu đồ đường
+
+        self.line_chart_frame_2 = tk.Frame(self.scrollable_frame)
+        self.line_chart_frame_2.grid(row=1, column=1, padx=10, pady=5, sticky='nsew')
+        self.scrollable_frame.grid_columnconfigure(1, weight=1)  # Đặt trọng số cột cho biểu đồ đường
 
         # Đặt trọng số cho hàng để các frame có thể mở rộng cùng nhau
-        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.scrollable_frame.grid_rowconfigure(0, weight=1)  # Đặt trọng số cho hàng 0 (biểu đồ cột)
+        self.scrollable_frame.grid_rowconfigure(1, weight=1)  # Đặt trọng số cho hàng 1 (biểu đồ đường)
 
     def create_employee_count_by_department_chart(self):
         """Biểu đồ cột: Số Nhân Viên Theo Phòng Ban."""
@@ -49,14 +72,21 @@ class EmployeeCharts(tk.Frame):
             departments = [row['department'] for row in result]
             counts = [row['count'] for row in result]
 
-            fig, ax = plt.subplots(figsize=(4, 2.5))  # Kích thước nhỏ hơn
-            ax.bar(departments, counts, color='skyblue')
+            fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
+            bars = ax.bar(departments, counts, color='skyblue')  # Gán đối tượng thanh cho biến 'bars'
             ax.set_xlabel('Phòng Ban')
             ax.set_ylabel('Số Nhân Viên')
             ax.set_title('Số Nhân Viên Theo Phòng Ban')
+            ax.set_xticklabels(departments, rotation=45, ha='right', fontsize=5)
+            ax.xaxis.set_visible(False)  # Ẩn trục hoành
 
+
+            # Thêm tính năng hiển thị tooltip khi di chuột vào cột
+            cursor = mplcursors.cursor(bars, hover=True)
+            cursor.connect("add", lambda sel: sel.annotation.set_text(departments[sel.index]))
             plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
-            self.add_canvas_to_frame(fig, self.bar_chart_frame)
+            self.add_canvas_to_frame(fig, self.bar_chart_frame_1)  # Thêm vào frame cột 1
+
 
     def create_total_salary_by_department_chart(self):
         """Biểu đồ cột: Tổng Lương Theo Phòng Ban."""
@@ -65,14 +95,19 @@ class EmployeeCharts(tk.Frame):
             departments = [row['name'] for row in result]
             total_salaries = [row['total_salary'] for row in result]
 
-            fig, ax = plt.subplots(figsize=(4, 2.5))  # Kích thước nhỏ hơn
-            ax.bar(departments, total_salaries, color='orange')
+            fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
+            bars =ax.bar(departments, total_salaries, color='orange')
             ax.set_xlabel('Phòng Ban')
             ax.set_ylabel('Tổng Lương')
             ax.set_title('Tổng Lương Theo Phòng Ban')
-
+            ax.set_xticklabels(departments, rotation=45, ha='right', fontsize=5)
+            ax.xaxis.set_visible(False)  # Ẩn trục hoành
+            # Thêm tính năng hiển thị tooltip khi di chuột vào cột
+            cursor = mplcursors.cursor(bars, hover=True)
+            cursor.connect("add", lambda sel: sel.annotation.set_text(departments[sel.index]))
             plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
-            self.add_canvas_to_frame(fig, self.bar_chart_frame)
+            self.add_canvas_to_frame(fig, self.bar_chart_frame_2)  # Thêm vào frame cột 2
+
 
     def create_salary_trend_chart(self):
         """Biểu đồ đường: Thay Đổi Lương Theo Thời Gian."""
@@ -81,14 +116,15 @@ class EmployeeCharts(tk.Frame):
             months = [row['month'] for row in result]
             avg_salaries = [row['avg_salary'] for row in result]
 
-            fig, ax = plt.subplots(figsize=(4, 2.5))  # Kích thước nhỏ hơn
+            fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
             ax.plot(months, avg_salaries, marker='o', color='green')
             ax.set_xlabel('Tháng')
             ax.set_ylabel('Lương Trung Bình')
             ax.set_title('Thay Đổi Lương Theo Thời Gian')
 
             plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
-            self.add_canvas_to_frame(fig, self.line_chart_frame)
+            self.add_canvas_to_frame(fig, self.line_chart_frame_1)  # Thêm vào frame hàng 1 cột 1
+
 
     def create_employee_trend_chart(self):
         """Biểu đồ đường: Thay Đổi Số Nhân Viên Theo Thời Gian."""
@@ -97,14 +133,14 @@ class EmployeeCharts(tk.Frame):
             months = [row['month'] for row in result]
             counts = [row['count'] for row in result]
 
-            fig, ax = plt.subplots(figsize=(4, 2.5))  # Kích thước nhỏ hơn
+            fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
             ax.plot(months, counts, marker='o', color='blue')
             ax.set_xlabel('Tháng')
             ax.set_ylabel('Số Nhân Viên')
             ax.set_title('Thay Đổi Số Nhân Viên Theo Thời Gian')
 
             plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
-            self.add_canvas_to_frame(fig, self.line_chart_frame)
+            self.add_canvas_to_frame(fig, self.line_chart_frame_2)
 
     def add_canvas_to_frame(self, fig, frame):
         """Thêm canvas biểu đồ vào frame."""
