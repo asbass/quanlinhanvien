@@ -18,14 +18,14 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.input_frame = tk.Frame(self)
         self.input_frame.pack(padx=10, pady=10)
         # Ô nhập Emp Name
-        tk.Label(self.input_frame, text="Emp Name:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
+        tk.Label(self.input_frame, text="Tên:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
         self.emp_id_combobox = ttk.Combobox(self.input_frame)
         self.emp_id_combobox.grid(row=0, column=1, padx=5, pady=5)
 
         self.load_employee_data() 
         self.emp_id_combobox.bind("<<ComboboxSelected>>", self.on_combobox_select)
         today = datetime.datetime.now().strftime("%d/%m/%Y")
-        tk.Label(self.input_frame, text="Select Date:").grid(row=1, column=0, padx=5, pady=5, sticky='w')
+        tk.Label(self.input_frame, text="Chọn ngày:").grid(row=1, column=0, padx=5, pady=5, sticky='w')
         self.selected_date_label = tk.Label(self.input_frame, text=today)
         self.selected_date_label.grid(row=1, column=1)
         icon_calendar_path = os.path.join(os.path.dirname(__file__), '..', 'image', 'calendar.png')
@@ -36,24 +36,24 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.show_calendar_button.grid(row=1, column=2, sticky='w', padx=(0, 5))
 
         # Ô nhập Status
-        tk.Label(self.input_frame, text="Status:").grid(row=2, column=0, padx=5, pady=5, sticky='w')
-        self.status_entry = ttk.Combobox(self.input_frame, values=["Dòng ý", "Từ chối", "None"])
+        tk.Label(self.input_frame, text="Trạng thái:").grid(row=2, column=0, padx=5, pady=5, sticky='w')
+        self.status_entry = ttk.Combobox(self.input_frame, values=["Đồng ý", "Từ chối", "None"])
         self.status_entry.grid(row=2, column=1, padx=5, pady=5)
         self.status_entry.set('None')
 
         # Ô nhập Reason
-        tk.Label(self.input_frame, text="Reason:").grid(row=3, column=0, padx=5, pady=5, sticky='w')
+        tk.Label(self.input_frame, text="Lý do:").grid(row=3, column=0, padx=5, pady=5, sticky='w')
         self.reason_entry = tk.Entry(self.input_frame)
         self.reason_entry.grid(row=3, column=1, padx=5, pady=5)
 
         # Ô nhập Type Off
-        tk.Label(self.input_frame, text="Type Off:").grid(row=4, column=0, padx=5, pady=5, sticky='w')
+        tk.Label(self.input_frame, text="Loại nghỉ:").grid(row=4, column=0, padx=5, pady=5, sticky='w')
         self.typeOff_entry = ttk.Combobox(self.input_frame, values=["OFF", "OT", "WFH"])
         self.typeOff_entry.grid(row=4, column=1, padx=5, pady=5)
         self.typeOff_entry.set("OFF")
 
         # Ô nhập Type Time
-        tk.Label(self.input_frame, text="Type Time:").grid(row=5, column=0, padx=5, pady=5, sticky='w')
+        tk.Label(self.input_frame, text="Loại thời gian:").grid(row=5, column=0, padx=5, pady=5, sticky='w')
         self.typeTime_entry = ttk.Combobox(self.input_frame, values=["AM", "PM", "DAY"])
         self.typeTime_entry.grid(row=5, column=1, padx=5, pady=5)
         self.typeTime_entry.set("DAY")
@@ -73,12 +73,12 @@ class ManagerWorkingTimeTab(tk.Frame):
         # Tạo Treeview để hiển thị dữ liệu
         self.tree = ttk.Treeview(self, columns=("ID", "Name", "Time", "Status", "Reason", "Type Off", "Type Time"), show="headings", height=10)
         self.tree.heading("ID", text="ID")
-        self.tree.heading("Name", text="Name")
-        self.tree.heading("Time", text="Time")
-        self.tree.heading("Status", text="Status")
-        self.tree.heading("Reason", text="Reason")
-        self.tree.heading("Type Off", text="Type Off")
-        self.tree.heading("Type Time", text="Type Time")
+        self.tree.heading("Name", text="Tên")
+        self.tree.heading("Time", text="Thời gian")
+        self.tree.heading("Status", text="Trạng thái")
+        self.tree.heading("Reason", text="Lý do")
+        self.tree.heading("Type Off", text="Loại nghỉ")
+        self.tree.heading("Type Time", text="Loại thời gian")
         self.tree.pack(pady=10, fill='both', expand=True)
         self.tree.tag_configure("center", anchor="center")
         self.update_treeview()
@@ -115,7 +115,13 @@ class ManagerWorkingTimeTab(tk.Frame):
     def add_working_time(self):
         emp_id = self.selected_emp_id.get()
         time = self.selected_date_label.cget("text")
-        status = self.status_entry.get()
+        if self.status_entry.get() == "Đồng ý":
+            status_display = "accept"
+        elif self.status_entry.get() == "Từ chối":
+            status_display = "decline"
+        else:
+            status_display = "none"
+        status = status_display
         reason = self.reason_entry.get()
         typeOff = self.typeOff_entry.get()
         typeTime = self.typeTime_entry.get()

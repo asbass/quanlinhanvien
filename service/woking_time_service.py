@@ -36,6 +36,7 @@ class WorkingTimeService:
         """
         data = (str(new_working_time.working_time_id),str(new_working_time.emp_id), new_working_time.reason, new_working_time.status, format_date, new_working_time.type_off, new_working_time.type_time)
         self.db.execute_query(query, data)
+        self.db.commit()
         print(self.working_time_list)
     
     def delete_working_time(self, working_time_id):
@@ -187,6 +188,8 @@ class WorkingTimeService:
         return result
 
     def get_employee_working_time_by_day(self, date):
+        self.db.close_connection()
+        self.db.connect()
         date_with_time = f"{date} 08:00:00"
         query = f"SELECT * FROM workingtime WHERE DATE(time) = DATE('{date_with_time}')"
         data = self.db.fetch_all(query)  # Thực hiện truy vấn với tham số ngày không có thời gian
