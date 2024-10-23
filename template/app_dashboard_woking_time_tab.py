@@ -12,21 +12,26 @@ class DashboardWokingTime(tk.Frame):
         super().__init__(parent)
         self.working_time = WorkingTimeService()
         self.employee_list = EmployeeList() 
-        # Nội dung của tab Employee List
-        tk.Label(self, text="Nhân viên nghỉ và làm việc tại nhà:").grid(row=0, column=0)
-        self.selected_date_label = tk.Label(self, text=f"{datetime.datetime.now().date()}")
-        self.selected_date_label.grid(row=0, column=1, sticky='w')
+        
+        # Tạo Frame để chứa các thành phần
+        self.content_frame = tk.Frame(self)
+        self.content_frame.grid(row=0, column=0, padx=10, pady=10)
+
+       # Nội dung của tab Employee List
+        tk.Label(self.content_frame, text="Nhân viên nghỉ và làm việc tại nhà:").grid(row=0, column=0, padx=(0, 0), pady=(0, 0))
+        self.selected_date_label = tk.Label(self.content_frame, text=f"{datetime.datetime.now().date()}")
+        self.selected_date_label.grid(row=0, column=1, sticky='w', padx=(5, 0))  # Đặt column=1 để nằm cạnh nhau
 
         icon_calendar_path = os.path.join(os.path.dirname(__file__), '..', 'image', 'calendar.png')
         image_icon_calendar = Image.open(icon_calendar_path)
         resized_image = image_icon_calendar.resize((25, 25), Image.Resampling.LANCZOS)
         self.icon_calendar = ImageTk.PhotoImage(resized_image)
-        self.show_calendar_button = tk.Button(self, image=self.icon_calendar, command=self.show_calendar_dialog)
-        self.show_calendar_button.grid(row=0, column=2, sticky='w', padx=(0, 5))
+        self.show_calendar_button = tk.Button(self.content_frame, image=self.icon_calendar, command=self.show_calendar_dialog)
+        self.show_calendar_button.grid(row=0, column=1, sticky='w', padx=(70, 5))  # Thêm padx để nút không quá gần cạnh
 
-        # Tạo Treeview
-        self.tree_working_time = ttk.Treeview(self, show="headings", height=10)
-        self.tree_working_time.grid(row=1, column=0, columnspan=4)
+            # Tạo Treeview
+        self.tree_working_time = ttk.Treeview(self.content_frame, show="headings", height=15)
+        self.tree_working_time.grid(row=1, column=0, columnspan=4, padx=(0, 5), pady=5,sticky='ew')  # Giảm padx cho sát bên trái
 
         # Định nghĩa các cột
         self.tree_working_time["columns"] = ("name", "type_off", "type_time", "reason")
@@ -38,27 +43,28 @@ class DashboardWokingTime(tk.Frame):
         self.tree_working_time.heading("reason", text="Lý do")
 
         # Đặt độ rộng cho các cột
-        self.tree_working_time.column("name", anchor="center", width=120)
-        self.tree_working_time.column("type_off", anchor="center", width=100)
-        self.tree_working_time.column("type_time", anchor="center", width=100)
-        self.tree_working_time.column("reason", anchor="center", width=200)
+        self.tree_working_time.column("name", anchor="center", width=150)
+        self.tree_working_time.column("type_off", anchor="center", width=120)
+        self.tree_working_time.column("type_time", anchor="center", width=120)
+        self.tree_working_time.column("reason", anchor="center", width=250)
         self.load_data_working_time(datetime.datetime.now().date().strftime("%Y-%m-%d"))
 
-        tk.Label(self, text="Quản lý thời gian làm việc theo năm:").grid(row=4, column=0, padx=5, pady=5)
 
-        self.year_combobox = ttk.Combobox(self, values=self.get_years())
+        tk.Label(self.content_frame, text="Quản lý thời gian làm việc theo năm:").grid(row=4, column=0, padx=5, pady=5)
+
+        self.year_combobox = ttk.Combobox(self.content_frame, values=self.get_years())
         self.year_combobox.grid(row=4, column=1, padx=5, pady=5)
         self.year_combobox.set(datetime.datetime.now().year)
 
-        tk.Label(self, text="Chọn tên:").grid(row=4, column=3, padx=5, pady=5)
+        tk.Label(self.content_frame, text="Chọn tên:").grid(row=4, column=3, padx=5, pady=5)
         employee_names = self.employee_list.get_employee_names()
-        self.emp_combobox = ttk.Combobox(self, values=employee_names)
+        self.emp_combobox = ttk.Combobox(self.content_frame, values=employee_names)
         self.emp_combobox.grid(row=4, column=4, padx=5, pady=5)
         if employee_names:
             self.emp_combobox.set(employee_names[0])
         
         # Tạo Treeview với số lượng hàng tối đa là 10
-        self.tree = ttk.Treeview(self, show="headings", height=10)  # Giới hạn 10 hàng
+        self.tree = ttk.Treeview(self.content_frame, show="headings", height=10)  # Giới hạn 10 hàng
         self.tree.grid(row=6, column=0, columnspan=10)
 
         # Tạo cột tiêu đề
@@ -100,8 +106,8 @@ class DashboardWokingTime(tk.Frame):
         self.load_data()
 
         # Điều chỉnh kích thước cho Treeview
-        self.grid_rowconfigure(6, weight=1)
-        self.grid_columnconfigure(6, weight=1)
+        self.grid_rowconfigure(5, weight=1)
+        self.grid_columnconfigure(5, weight=1)
 
     def load_data(self):
         # Lấy dữ liệu tóm tắt thời gian làm việc của nhân viên
