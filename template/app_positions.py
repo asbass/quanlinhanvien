@@ -79,6 +79,9 @@ class PositonsApp(tk.Frame):
                 self.position_list.add_position(name, salary_coefficient)
                 self.refresh_treeview()
                 self.clear_entries()
+                if hasattr(self.master.master, 'update_Postion_list_in_position_app'):
+                    self.master.master.update_Postion_list_in_position_app()
+                    print("Chuc vu đã được thêm thành công và danh sách đã được cập nhật.")
             except ValueError:
                 messagebox.showerror("Lỗi", "Hệ số lương phải là số.")
         else:
@@ -116,6 +119,9 @@ class PositonsApp(tk.Frame):
                     self.position_list.update_position(index, name, salary_coefficient)  # Cập nhật vị trí
                     self.refresh_treeview()  # Làm mới giao diện
                     self.clear_entries()  # Làm sạch các trường nhập liệu
+                    if hasattr(self.master.master, 'update_Postion_list_in_position_app'):
+                        self.master.master.update_Postion_list_in_position_app()
+                        print("Chuc vu đã được sửa thành công và danh sách đã được cập nhật.")
                 else:
                     messagebox.showerror("Lỗi", "Chức vụ không tìm thấy.")
             except ValueError:
@@ -136,6 +142,9 @@ class PositonsApp(tk.Frame):
         position_id = self.tree.item(selected_item)['values'][0]
         self.position_list.delete_position(position_id)
         self.refresh_treeview()
+        if hasattr(self.master.master, 'update_Postion_list_in_position_app'):
+                    self.master.master.update_Postion_list_in_position_app()
+                    print("Chuc vu đã được xóa thành công và danh sách đã được cập nhật.")
 
     def close_connection(self):
         self.position_list.close_connection()

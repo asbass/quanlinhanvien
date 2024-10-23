@@ -44,6 +44,7 @@ class PayrollApp(tk.Frame):
         tk.Label(self.frame, text="Tên Nhân Viên:").grid(row=3, column=0, padx=5, pady=5)
         self.employee_name_entry = ttk.Combobox(self.frame, state="readonly")
         self.employee_name_entry.grid(row=3, column=1, padx=5, pady=5)
+        self.employee_name_entry.set("Chọn Tên Nhân Viên") 
         self.employee_name_entry.bind("<<ComboboxSelected>>", self.on_employee_selected)
         self.loads_employee_list()
         # Nhập chức vụ
@@ -165,31 +166,22 @@ class PayrollApp(tk.Frame):
         except Exception as e:
             messagebox.showerror("Lỗi", f"Đã xảy ra lỗi khi thêm bảng lương: {e}")
         self.clear_entries()
-    def update_employee_position(self):
-        # Nếu không có danh sách nhân viên, thì buộc tải từ cơ sở dữ liệu
-        
-        self.is_employee_list_loaded = False
-        """Tải danh sách nhân viên chỉ một lần."""
-        if not self.is_employee_list_loaded:
-            print("Loading employee list from database...")  # Debug
-            self.employee_list.load_employees_from_db()
-            print(f"Employee list after loading: {self.employee_list.get_employees()}")  # Debug
-            self.is_employee_list_loaded = True
-        else:
-            print(f"Employee list is already loaded: {self.employee_list.get_employees()}")  # Debug
+    # def update_employee_position(self, position_list):
+    #     self.employee_name_entry['values'] = position_list
+    #     print("Danh sách phòng ban đã được cập nhật.")
             
     def loads_employee_list(self):
-        employee_names = self.employee_list.get_employee_name()  # Get the latest employee names
+        employee_names = self.employee_list.get_employee_names()  # Get the latest employee names
         self.employee_name_entry['values'] = employee_names  # Update the UI component
         self.employee_name_entry.update()
-        if employee_names:
-            self.employee_name_entry.current(0)  # Optionally select the first employee
+        self.employee_name_entry.delete(0, tk.END)
         print("Employee list updated with the latest data from the database.")
     def update_employee_list(self, employee_list):
-        employee_names = [employee['name'] for employee in employee_list]  # Lấy tên nhân viên
-        self.employee_name_entry['values'] = employee_names  # Cập nhật ComboBox hoặc các thành phần khác
-        if employee_names:
+        self.employee_name_entry['values'] = employee_list  # Cập nhật ComboBox hoặc các thành phần khác
+        print("Danh sách nhân viên đã được cập nhật trong PayrollApp.")
+        if employee_list:
             self.employee_name_entry.current(0)  # Tùy chọn chọn nhân viên đầu tiên
+        
         print("Danh sách nhân viên đã được cập nhật trong PayrollApp.")
     def on_key_release(self, event):
         if self.days_off_entry.get().isdigit() or self.bonus_salary_entry.get().isdigit():
