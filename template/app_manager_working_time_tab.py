@@ -24,7 +24,10 @@ class ManagerWorkingTimeTab(tk.Frame):
 
         self.load_employee_data() 
         self.emp_id_combobox.bind("<<ComboboxSelected>>", self.on_combobox_select)
-
+        today = datetime.datetime.now().strftime("%d/%m/%Y")
+        tk.Label(self.input_frame, text="Select Date:").grid(row=1, column=0, padx=5, pady=5, sticky='w')
+        self.selected_date_label = tk.Label(self.input_frame, text=today)
+        self.selected_date_label.grid(row=1, column=1)
         icon_calendar_path = os.path.join(os.path.dirname(__file__), '..', 'image', 'calendar.png')
         image_icon_calendar = Image.open(icon_calendar_path)
         resized_image = image_icon_calendar.resize((25, 25), Image.Resampling.LANCZOS)
@@ -33,9 +36,9 @@ class ManagerWorkingTimeTab(tk.Frame):
         self.show_calendar_button.grid(row=1, column=2, sticky='w', padx=(0, 5))
 
         # Ô nhập Status
-        tk.Label(self.input_frame, text="Status:").grid(row=1, column=0, padx=5, pady=5, sticky='w')
+        tk.Label(self.input_frame, text="Status:").grid(row=2, column=0, padx=5, pady=5, sticky='w')
         self.status_entry = ttk.Combobox(self.input_frame, values=["Dòng ý", "Từ chối", "None"])
-        self.status_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.status_entry.grid(row=2, column=1, padx=5, pady=5)
         self.status_entry.set('None')
 
         # Ô nhập Reason
@@ -104,12 +107,10 @@ class ManagerWorkingTimeTab(tk.Frame):
         dialog.destroy()
 
     def on_combobox_select(self, event):
+        self.working_time.get_employee_working_time_summary()
         selected_name = self.emp_id_combobox.get()
         selected_index = self.employee_names.index(selected_name)
         self.selected_emp_id.set(self.employee_ids[selected_index])  
-        employees = self.employee_list.get_employees()
-        for employee in employees:
-            print(employee.emp_id)
 
     def add_working_time(self):
         emp_id = self.selected_emp_id.get()
@@ -120,14 +121,7 @@ class ManagerWorkingTimeTab(tk.Frame):
         typeTime = self.typeTime_entry.get()
         try:
             # Kiểm tra định dạng ngày (dd/mm/yyyy)
-            datetime.datetime.strptime(time, "%d/%m/%Y")  
-
-            # Thực hiện lưu thông tin vào hệ thống
-            # print(f"emp_id: {emp_id},Time: {time}, Status: {status}, Reason: {reason}, Type Off: {typeOff}, Type Time: {typeTime}")
-            
-            # Giả sử bạn có hàm để xử lý thêm thời gian làm việc:
-            print(time)
-            print(typeTime)
+            datetime.datetime.strptime(time, "%d/%m/%Y") 
             self.working_time.add_working_time(emp_id, time, status, reason, typeOff, typeTime)
             self.update_treeview()
             messagebox.showinfo("Thành công", "Thời gian làm việc đã được thêm.")
@@ -204,8 +198,8 @@ class ManagerWorkingTimeTab(tk.Frame):
         for working_time in self.working_time.get_working_time():
             employee_name = "None" 
             for employee in employees:
-                if employee['emp_id'] == str(working_time.working_time_id):
-                    employee_name = employee['name']  # Truy cập tên nhân viên qua khóa 'name'
+                if employee['emp_id'] == str(working_time.emp_id):
+                    employee_name = employee['name'] 
                     break
             if working_time.status == "accept":
                 status_display = "Đồng ý"

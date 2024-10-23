@@ -12,7 +12,7 @@ class WorkingTimeService:
         self.working_time_list = []
         self.db.connect()
         self.load_working_time_from_db()
-        # self.employee_list = EmployeeList()
+        self.employee_list = EmployeeList()
         # self.department_list = departmentList()
     
     def load_working_time_from_db(self):
@@ -59,7 +59,7 @@ class WorkingTimeService:
         
     def get_working_time(self):
         # Lấy danh sách các phòng ban
-        query = "SELECT * FROM workingtime"
+        query = "SELECT * FROM workingtime ORDER BY time DESC"
         data = self.db.fetch_all(query)
         return [WorkingTime(**working_time) for working_time in data]
     
@@ -124,59 +124,74 @@ class WorkingTimeService:
     # def list_working_times(self):
     #     # Liệt kê tất cả các mục làm việc
     #     return self.working_time_list
+
     
-    # def list_working_time_by_year(self, year: int):
-    #     # Tạo một dictionary để lưu tổng số ngày nghỉ cho từng nhân viên, từng tháng, và trạng thái OFF, OT, WFH
-    #     result = defaultdict(lambda: {
-    #         "months": {month: {"OFF": 0, "OT": 0, "WFH": 0} for month in range(1, 13)},
-    #         "total": {"OFF": 0, "OT": 0, "WFH": 0}
-    #     })
+    def get_employee_working_time_summary(self):
+        # Lấy danh sách tất cả nhân viên
+        employees = self.employee_list.get_employees()
 
-    #     for working_time in self.working_time_list:
-    #         # Lọc theo năm (định dạng dd/mm/yyyy)
-    #         work_year = datetime.datetime.strptime(working_time.time, '%d/%m/%Y').year
-    #         if work_year == year:
-    #             print(working_time.emp_id)
-    #             emp_id = working_time.emp_id
-    #             work_month = datetime.datetime.strptime(working_time.time, '%d/%m/%Y').month
-    #             off_type = working_time.typeOff
-    #             time_type = working_time.typeTime
+        # Tạo dictionary cho nhân viên với số ngày nghỉ mặc định là 0
+        summary = {emp['emp_id']: {
+            'name': emp['name'],  # Hoặc bất kỳ thông tin nào bạn muốn lưu
+            **{f"thang_{month}_WFH": 0 for month in range(1, 13)},
+            **{f"thang_{month}_OT": 0 for month in range(1, 13)},
+            **{f"thang_{month}_OFF": 0 for month in range(1, 13)},
+            "Total_WFH": 0,
+            "Total_OT": 0,
+            "Total_OFF": 0,
+        } for emp in employees}
 
-    #             print(work_month)
-    #             print(off_type)
-    #             # Tính số ngày nghỉ dựa trên AM/PM/D
-    #             if time_type in ["AM", "PM"]:
-    #                 day_value = 0.5
-    #             else:
-    #                 day_value = 1
+        # Lấy dữ liệu từ bảng workingtime
+        query = "SELECT * FROM workingtime ORDER BY time DESC"
+        data = self.db.fetch_all(query)
+        working_times = [WorkingTime(**working_time) for working_time in data]
 
-    #             print(day_value)
-    #             # Cộng dồn số ngày nghỉ cho từng trạng thái OFF, OT, WFH
-    #             result[emp_id]["months"][work_month][off_type] += day_value
-    #             result[emp_id]["total"][off_type] += day_value
+        # Hàm tính số ngày nghỉ dựa trên type_time
+        def calculate_days_by_type(type_time):
+            if type_time in ['AM', 'PM']:
+                return 0.5
+            elif type_time == 'DAY':
+                return 1
+            return 0
 
-    #             print(f"Result after update: {result[emp_id]['months'][work_month]}")
-    #             print(f"Result after update: {result[emp_id]["total"][off_type]}")
-    #             print(emp_id)
+        # Duyệt qua danh sách working_time và cập nhật số ngày nghỉ
+        for wt in working_times:
+            # Lấy tháng từ trường time
+            if isinstance(wt.time, str):  # Nếu là chuỗi
+                month = datetime.datetime.strptime(wt.time, "%Y-%m-%d %H:%M:%S").month
+            elif isinstance(wt.time, datetime.datetime):  # Nếu là datetime
+                month = wt.time.month
+            else:
+                raise ValueError("wt.time phải là chuỗi hoặc datetime.datetime")
+            # Tính số ngày nghỉ dựa trên type_time
+            days = calculate_days_by_type(wt.type_time)
 
-    #     # Kiểm tra xem nhân viên có trong kết quả không
-    #     for employee in self.employee_list.get_employees():
-    #         emp_id = employee.emp_id 
-    #         if emp_id not in result:
-    #             result[emp_id]  # Thêm một mục mặc định cho nhân viên không có dữ liệu
+            # Cộng dồn số ngày nghỉ cho nhân viên theo tháng và loại nghỉ
+            summary[wt.emp_id][f"thang_{month}_{wt.type_off}"] += days
 
-    #     # In ra thông tin cho từng nhân viên
-    #     for employee in self.employee_list.get_employees():
-    #         emp_id = employee.emp_id 
-    #         print(f"Employee: {employee.name}")
-    #         print("Monthly totals:")
-    #         for month, totals in result[emp_id]["months"].items():
-    #             print(f" Month {month}: {totals}")
-    #         print("Yearly total:", result[emp_id]["total"])
-    #         print("\n")
+            # Cập nhật tổng số ngày nghỉ
+            summary[wt.emp_id][f"Total_{wt.type_off}"] += days
 
-    #     return result
+        # Chuẩn bị dữ liệu kết quả
+        result = []
+        for emp_id, emp_data in summary.items():
+            emp_summary = {
+                "emp_id": emp_id,
+                "name": emp_data['name'],
+                **{k: emp_data[k] for k in emp_data if k.startswith("thang")},
+                "Total_WFH": emp_data["Total_WFH"],
+                "Total_OT": emp_data["Total_OT"],
+                "Total_OFF": emp_data["Total_OFF"],
+            }
+            result.append(emp_summary)
+        return result
 
+    def get_employee_working_time_by_day(self, date):
+        date_with_time = f"{date} 08:00:00"
+        query = f"SELECT * FROM workingtime WHERE DATE(time) = DATE('{date_with_time}')"
+        data = self.db.fetch_all(query)  # Thực hiện truy vấn với tham số ngày không có thời gian
+        working_times = [WorkingTime(**working_time) for working_time in data]
+        return working_times
     # def get_off_days_by_employee(self, emp_id):
     #     # Lọc danh sách ngày nghỉ theo emp_id
     #     return [wt.time for wt in self.working_time_list if wt.emp_id == emp_id]
