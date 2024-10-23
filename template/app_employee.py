@@ -221,17 +221,22 @@ class EmployeeApp(tk.Frame):
         # Lấy danh sách nhân viên hiện tại
         employees = self.employee_list.get_employees()
 
+        if not employees:
+            print("Không có nhân viên nào để sắp xếp.")  # Thông báo nếu không có nhân viên
+
         # Sắp xếp theo cột đã chọn
         if col == "ID":
-            employees.sort(key=lambda emp: emp.emp_id, reverse=reverse)
+            employees.sort(key=lambda emp: emp["emp_id"], reverse=reverse)
         elif col == "Tên":
-            employees.sort(key=lambda emp: emp.name.lower(), reverse=reverse)
+            employees.sort(key=lambda emp: emp["name"].lower(), reverse=reverse)
         elif col == "Tuổi":
-            employees.sort(key=lambda emp: emp.age, reverse=reverse)
+            employees.sort(key=lambda emp: emp["age"], reverse=reverse)
         elif col == "Phòng Ban":
-            employees.sort(key=lambda emp: emp.department.lower(), reverse=reverse)
+            employees.sort(key=lambda emp: emp["department_id"].lower(), reverse=reverse)
         elif col == "Chức vụ":
-            employees.sort(key=lambda emp: emp.position.lower(), reverse=reverse)
+            employees.sort(key=lambda emp: emp["position_id"].lower(), reverse=reverse)
+
+        
         # Cập nhật trạng thái sắp xếp
         self.sort_reverse[col] = not reverse
 
@@ -248,15 +253,26 @@ class EmployeeApp(tk.Frame):
         self.clear_entries()
         # Thêm các nhân viên vào Treeview
         for emp in employees:
-            department_name = self.employee_list.get_department_name_by_id(emp["department_id"])
-            positons_name = self.employee_list.get_position_name_by_id(emp["position_id"])
+                # Lấy thông tin phòng ban và chức vụ
+            department_id = emp.get("department_id")  # Sử dụng get để tránh KeyError
+            position_id = emp.get("position_id")      # Sử dụng get để tránh KeyError
+            # Kiểm tra sự tồn tại của department_id và position_id
+            if department_id is not None:
+                department_name = self.employee_list.get_department_name_by_id(department_id)
+            else:
+                department_name = self.employee_list.get_department_id_by_name(department_id)
+                print("nên",department_name)
+            if position_id is not None:
+                position_name = self.employee_list.get_position_name_by_id(position_id)
+            else:
+                position_name = self.employee_list.get_position_id_by_name(position_id)
             # Thêm thông tin nhân viên vào Treeview
             self.tree.insert("", "end", values=(
                 emp['emp_id'], 
                 emp["name"], 
                 emp["age"], 
                 department_name,  # Hiển thị tên phòng ban
-                positons_name
+                position_name
             ))
   
     def display_employees(self):
