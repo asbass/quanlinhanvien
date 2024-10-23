@@ -55,13 +55,6 @@ class DashboardWokingTime(tk.Frame):
         self.year_combobox = ttk.Combobox(self.content_frame, values=self.get_years())
         self.year_combobox.grid(row=4, column=1, padx=5, pady=5)
         self.year_combobox.set(datetime.datetime.now().year)
-
-        tk.Label(self.content_frame, text="Chọn tên:").grid(row=4, column=3, padx=5, pady=5)
-        employee_names = self.employee_list.get_employee_names()
-        self.emp_combobox = ttk.Combobox(self.content_frame, values=employee_names)
-        self.emp_combobox.grid(row=4, column=4, padx=5, pady=5)
-        if employee_names:
-            self.emp_combobox.set(employee_names[0])
         
         # Tạo Treeview với số lượng hàng tối đa là 10
         self.tree = ttk.Treeview(self.content_frame, show="headings", height=10)  # Giới hạn 10 hàng
