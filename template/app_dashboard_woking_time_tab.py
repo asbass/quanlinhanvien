@@ -151,10 +151,8 @@ class DashboardWokingTime(tk.Frame):
 
     def select_date(self, calendar, dialog):
         selected_date = calendar.get_date()
-        print(selected_date)
         date_obj = datetime.datetime.strptime(selected_date, "%m/%d/%y")
     
-        # Định dạng lại ngày thành yyyy-mm-dd
         formatted_date = date_obj.strftime("%Y-%m-%d")
         print(f"Selected Date: {formatted_date}")
         self.selected_date_label.config(text=f"{formatted_date}")
