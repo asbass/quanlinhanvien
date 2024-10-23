@@ -28,12 +28,12 @@ class MainApp(tk.Tk):
         self.statistics_tab = EmployeeCharts(self.tab_control)  # Thêm tab thống kê
 
         # Thêm các tab vào tab_control
+        self.tab_control.add(self.statistics_tab, text="Thống Kê")  # Thêm vào đây
         self.tab_control.add(self.employee_tab, text="Nhân Viên")
         self.tab_control.add(self.department_tab, text="Phòng Ban")
         self.tab_control.add(self.working_time_tab, text="Thời gian làm việc")
         self.tab_control.add(self.Payroll_tab, text="Bảng lương")
         self.tab_control.add(self.Position_tab, text="Chức Vụ")
-        self.tab_control.add(self.statistics_tab, text="Thống Kê")  # Thêm vào đây
 
         # Đặt tab_control vào giao diện
         self.tab_control.pack(expand=1, fill="both")

@@ -38,8 +38,8 @@ class EmployeeCharts(tk.Frame):
         # Tạo các biểu đồ
         self.create_employee_count_by_department_chart()
         self.create_total_salary_by_department_chart()
-        self.create_salary_trend_chart()
-        self.create_employee_trend_chart()
+        # self.create_salary_trend_chart()
+        # self.create_employee_trend_chart()
 
     def create_chart_frames(self):
         """Tạo các frame cho biểu đồ và chia đều chúng trong frame chính."""    
@@ -77,6 +77,7 @@ class EmployeeCharts(tk.Frame):
             ax.set_xlabel('Phòng Ban')
             ax.set_ylabel('Số Nhân Viên')
             ax.set_title('Số Nhân Viên Theo Phòng Ban')
+            ax.set_xticks(range(len(departments)))  # Thiết lập vị trí tick
             ax.set_xticklabels(departments, rotation=45, ha='right', fontsize=5)
             ax.xaxis.set_visible(False)  # Ẩn trục hoành
 
@@ -100,6 +101,7 @@ class EmployeeCharts(tk.Frame):
             ax.set_xlabel('Phòng Ban')
             ax.set_ylabel('Tổng Lương')
             ax.set_title('Tổng Lương Theo Phòng Ban')
+            ax.set_xticks(range(len(departments)))  # Thiết lập vị trí tick
             ax.set_xticklabels(departments, rotation=45, ha='right', fontsize=5)
             ax.xaxis.set_visible(False)  # Ẩn trục hoành
             # Thêm tính năng hiển thị tooltip khi di chuột vào cột
@@ -109,38 +111,38 @@ class EmployeeCharts(tk.Frame):
             self.add_canvas_to_frame(fig, self.bar_chart_frame_2)  # Thêm vào frame cột 2
 
 
-    def create_salary_trend_chart(self):
-        """Biểu đồ đường: Thay Đổi Lương Theo Thời Gian."""
-        result = self.payroll_list.salary_trend_chart()
-        if result:
-            months = [row['month'] for row in result]
-            avg_salaries = [row['avg_salary'] for row in result]
+    # def create_salary_trend_chart(self):
+    #     """Biểu đồ đường: Thay Đổi Lương Theo Thời Gian."""
+    #     result = self.payroll_list.salary_trend_chart()
+    #     if result:
+    #         months = [row['month'] for row in result]
+    #         avg_salaries = [row['avg_salary'] for row in result]
 
-            fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
-            ax.plot(months, avg_salaries, marker='o', color='green')
-            ax.set_xlabel('Tháng')
-            ax.set_ylabel('Lương Trung Bình')
-            ax.set_title('Thay Đổi Lương Theo Thời Gian')
+    #         fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
+    #         ax.plot(months, avg_salaries, marker='o', color='green')
+    #         ax.set_xlabel('Tháng')
+    #         ax.set_ylabel('Lương Trung Bình')
+    #         ax.set_title('Thay Đổi Lương Theo Thời Gian')
 
-            plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
-            self.add_canvas_to_frame(fig, self.line_chart_frame_1)  # Thêm vào frame hàng 1 cột 1
+    #         plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
+    #         self.add_canvas_to_frame(fig, self.line_chart_frame_1)  # Thêm vào frame hàng 1 cột 1
 
 
-    def create_employee_trend_chart(self):
-        """Biểu đồ đường: Thay Đổi Số Nhân Viên Theo Thời Gian."""
-        result = self.payroll_list.employee_trend_chart()
-        if result:
-            months = [row['month'] for row in result]
-            counts = [row['count'] for row in result]
+    # def create_employee_trend_chart(self):
+    #     """Biểu đồ đường: Thay Đổi Số Nhân Viên Theo Thời Gian."""
+    #     result = self.payroll_list.employee_trend_chart()
+    #     if result:
+    #         months = [row['month'] for row in result]
+    #         counts = [row['count'] for row in result]
 
-            fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
-            ax.plot(months, counts, marker='o', color='blue')
-            ax.set_xlabel('Tháng')
-            ax.set_ylabel('Số Nhân Viên')
-            ax.set_title('Thay Đổi Số Nhân Viên Theo Thời Gian')
+    #         fig, ax = plt.subplots(figsize=(6, 5))  # Kích thước nhỏ hơn
+    #         ax.plot(months, counts, marker='o', color='blue')
+    #         ax.set_xlabel('Tháng')
+    #         ax.set_ylabel('Số Nhân Viên')
+    #         ax.set_title('Thay Đổi Số Nhân Viên Theo Thời Gian')
 
-            plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
-            self.add_canvas_to_frame(fig, self.line_chart_frame_2)
+    #         plt.tight_layout()  # Tự động điều chỉnh kích thước biểu đồ
+    #         self.add_canvas_to_frame(fig, self.line_chart_frame_2)
 
     def add_canvas_to_frame(self, fig, frame):
         """Thêm canvas biểu đồ vào frame."""
