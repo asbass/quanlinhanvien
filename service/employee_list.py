@@ -97,6 +97,7 @@ class EmployeeList:
     
     def get_employeezs(self):
         return self.employees 
+    
     def get_employees(self):
         self.db.close_connection()
         self.db.connect()
@@ -233,4 +234,61 @@ class EmployeeList:
     def salary_percentage_by_department_chart(self):
         query = "SELECT d.name, SUM(p.basic_salary + p.reward) AS total_salary FROM Employee e JOIN Payroll p ON e.emp_id = p.emp_id JOIN Department d ON e.department_id = d.dept_id GROUP BY d.name;"
         return self.db.fetch_all(query)  # Lấy dữ liệu từ database
+    def get_employees_with_no_days_off(self):
+        """Trả về danh sách tên nhân viên không nghỉ ngày nào."""
+        employees = []  # Danh sách chứa tên nhân viên không nghỉ
+        query = """
+            SELECT e.name 
+            FROM Employee e
+            LEFT JOIN Payroll p ON e.emp_id = p.emp_id
+            GROUP BY e.emp_id
+            HAVING SUM(p.day_off) = 0
+        """
 
+        try:
+            results = self.db.execute_query(query)  # Thực thi truy vấn
+            if results:  # Kiểm tra nếu có kết quả trả về
+                for result in results:
+                    employees.append(result['name'])  # Đảm bảo lấy tên từ từ điển
+            else:
+                print("Không có nhân viên nào không nghỉ ngày nào.")  # Thông báo nếu không có kết quả
+
+        except Exception as e:
+            print(f"Đã xảy ra lỗi khi thực hiện truy vấn: {e}")  # Xử lý lỗi
+
+        return employees
+    def get_least_days_off_month(self):
+        query = """
+            SELECT MONTH(time) AS month, COUNT(*) AS num_days_off
+            FROM WorkingTime
+            WHERE type_time = 'off'
+            GROUP BY month
+            ORDER BY num_days_off ASC
+            LIMIT 1;
+        """
+        return self.db.fetch_all(query)  # Lấy dữ liệu từ database
+    def get_total_departments(self):
+        query = """SELECT COUNT(*) AS total_departments FROM Department;"""
+        return self.db.fetch_one(query)  # Sửa thành fetch_one để chỉ lấy một giá trị
+    def get_total_employees(self):
+            query = """SELECT COUNT(*) AS total_employees FROM Employee;"""
+            return self.db.fetch_one(query)  # Sửa thành fetch_one để chỉ lấy một giá trị
+    def get_highest_salary_by_department(self):
+        query = """SELECT e.name, d.name AS department_name, p.net_salary AS salary
+                    FROM Employee e
+                    JOIN Department d ON e.department_id = d.dept_id
+                    JOIN Payroll p ON e.emp_id = p.emp_id
+                    WHERE p.month = (SELECT MAX(month) FROM Payroll WHERE emp_id = e.emp_id)
+                    AND p.year = (SELECT MAX(year) FROM Payroll WHERE emp_id = e.emp_id)
+                    AND p.net_salary = (
+                        SELECT MAX(net_salary) FROM Payroll WHERE emp_id = e.emp_id
+                        GROUP BY emp_id
+                    );"""
+        return self.db.fetch_all(query)  # Lấy dữ liệu từ database
+    def get_highest_salary(self):
+        query = """SELECT e.name, p.net_salary AS salary 
+                FROM Employee e
+                JOIN Payroll p ON e.emp_id = p.emp_id
+                ORDER BY p.net_salary DESC 
+                LIMIT 1;"""
+        return self.db.fetch_one(query)
