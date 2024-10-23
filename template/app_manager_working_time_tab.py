@@ -104,12 +104,10 @@ class ManagerWorkingTimeTab(tk.Frame):
         dialog.destroy()
 
     def on_combobox_select(self, event):
+        self.working_time.get_employee_working_time_summary()
         selected_name = self.emp_id_combobox.get()
         selected_index = self.employee_names.index(selected_name)
         self.selected_emp_id.set(self.employee_ids[selected_index])  
-        employees = self.employee_list.get_employees()
-        for employee in employees:
-            print(employee.emp_id)
 
     def add_working_time(self):
         emp_id = self.selected_emp_id.get()
@@ -120,14 +118,7 @@ class ManagerWorkingTimeTab(tk.Frame):
         typeTime = self.typeTime_entry.get()
         try:
             # Kiểm tra định dạng ngày (dd/mm/yyyy)
-            datetime.datetime.strptime(time, "%d/%m/%Y")  
-
-            # Thực hiện lưu thông tin vào hệ thống
-            # print(f"emp_id: {emp_id},Time: {time}, Status: {status}, Reason: {reason}, Type Off: {typeOff}, Type Time: {typeTime}")
-            
-            # Giả sử bạn có hàm để xử lý thêm thời gian làm việc:
-            print(time)
-            print(typeTime)
+            datetime.datetime.strptime(time, "%d/%m/%Y") 
             self.working_time.add_working_time(emp_id, time, status, reason, typeOff, typeTime)
             self.update_treeview()
             messagebox.showinfo("Thành công", "Thời gian làm việc đã được thêm.")
