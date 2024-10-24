@@ -76,12 +76,19 @@ class PositonsApp(tk.Frame):
         if name and salary_coefficient:
             try:
                 salary_coefficient = float(salary_coefficient)
+
+                # Kiểm tra nếu hệ số lương âm
+                if salary_coefficient < 0:
+                    messagebox.showerror("Lỗi", "Hệ số lương không được là số âm.")
+                    return  # Dừng thêm nếu hệ số lương âm
+                
                 self.position_list.add_position(name, salary_coefficient)
                 self.refresh_treeview()
                 self.clear_entries()
+
                 if hasattr(self.master.master, 'update_Postion_list_in_position_app'):
                     self.master.master.update_Postion_list_in_position_app()
-                    print("Chuc vu đã được thêm thành công và danh sách đã được cập nhật.")
+                    print("Chức vụ đã được thêm thành công và danh sách đã được cập nhật.")
             except ValueError:
                 messagebox.showerror("Lỗi", "Hệ số lương phải là số.")
         else:
