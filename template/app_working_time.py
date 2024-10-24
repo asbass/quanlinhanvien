@@ -37,6 +37,7 @@ class WokingTimeApp(tk.Frame):
             self.tab2.load_employee_data()
         if event.widget.tab(selected_tab, "text") == "Bảng điều khiển":
             self.tab1.load_data_working_time(datetime.datetime.now().date().strftime("%Y-%m-%d"))
+            self.tab1.load_data()
     
     def set_to_tab_default(self):
         # Đặt lại tab con về B1
