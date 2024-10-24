@@ -75,7 +75,9 @@ class PositionList:
         
         Positions =self.get_positions()
         return [position['name'] for position in Positions if 'name' in position]
-
+    def get_position(self, position_id):
+        query = "SELECT * FROM Positions WHERE position_id = %s"
+        return self.db.fetch_one(query, (position_id,))
     def get_position_by_id(self, position_id):
         for pos in self.positions:
             if pos.position_id == position_id:

@@ -61,13 +61,13 @@ class PositonsApp(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             position_id = self.tree.item(selected_item)['values'][0]
-            position = self.position_list.get_position_by_id(position_id)  # Lấy thông tin chức vụ
+            position = self.position_list.get_position(position_id)  # Lấy thông tin chức vụ
 
             if position:
                 self.entry_name.delete(0, tk.END)
-                self.entry_name.insert(0, position.name)  # Hiển thị tên chức vụ
+                self.entry_name.insert(0, position["name"])  # Hiển thị tên chức vụ
                 self.entry_salary_coefficient.delete(0, tk.END)
-                self.entry_salary_coefficient.insert(0, position.salary_multiplier)  # Hiển thị hệ số lương
+                self.entry_salary_coefficient.insert(0, position["salary_multiplier"])  # Hiển thị hệ số lương
 
     def add_position(self):
         name = self.entry_name.get()
