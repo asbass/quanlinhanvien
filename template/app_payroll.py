@@ -126,49 +126,54 @@ class PayrollApp(tk.Frame):
         days_off = self.days_off_entry.get().strip()
         net_salary = self.net_salary_entry.get().strip()
 
-                # Kiểm tra xem nhân viên đã có bảng lương cho tháng và năm này chưa
+        # Kiểm tra xem nhân viên đã có bảng lương cho tháng và năm này chưa
         for item in self.tree.get_children():
             values = self.tree.item(item, "values")
-            # Đảm bảo so sánh đúng các giá trị
             if (values[0] == employee_id and  # employee_id
                 values[3] == str(month) and   # month
                 values[4] == str(year)):      # year
                 messagebox.showerror("Lỗi", "Nhân viên đã có bảng lương cho tháng này trong năm rồi.")
                 return  # Ngừng thêm bảng lương nếu đã tồn tại
+
         # Chuyển đổi các giá trị cần thiết cho việc thêm vào payroll_list
         try:
-            # Kiểm tra nếu chuỗi lương và thưởng là số hợp lệ (bỏ đi dấu phẩy và ký tự "VND")            
-            # Kiểm tra định dạng số hợp lệ cho lương cơ bản và thưởng
+            # Kiểm tra nếu chuỗi lương và thưởng là số hợp lệ (bỏ đi dấu phẩy và ký tự "VND")
             basic_salary = re.sub(r'[^\d]', '', basic_salary)  # Bỏ đi ký tự không phải số
-            bonus_salary = re.sub(r'[^\d]', '', bonus_salary)
+            bonus_salary = re.sub(r'[^\d.-]', '', bonus_salary)
             net_salary = re.sub(r'[^\d]', '', net_salary)
-            
-            # Chuyển đổi thành số nguyên
+
+            # Chuyển đổi thành số
+            basic_salary = float(basic_salary)  # Lương cơ bản
             reward = float(bonus_salary)  # Lương thưởng
             day_off = int(days_off)  # Số ngày nghỉ
-            basic_salary = float(basic_salary)  # Lương cơ bản
             net_salary = float(net_salary)  # Lương thực nhận
+
+            # Kiểm tra nếu bonus_salary là âm
+            if reward < 0:
+                messagebox.showerror("Lỗi", "Lương thưởng không được là số âm.")
+                return
         except ValueError:
             messagebox.showerror("Lỗi", "Giá trị lương, thưởng hoặc số ngày nghỉ không hợp lệ.")
             return
+
         basic_salary_formatted = f"{basic_salary:,.0f} VNĐ"
         bonus_salary_formatted = f"{reward:,.0f} VNĐ"
         net_salary_formatted = f"{net_salary:,.0f} VNĐ"
-        # Tạo payroll_id bằng UUID
 
         # Thêm bảng lương vào Treeview
         self.tree.insert("", "end", values=(employee_id, employee_name, position, month, year, basic_salary_formatted, bonus_salary_formatted, days_off, net_salary_formatted))
 
         # Gọi phương thức để thêm bảng lương vào cơ sở dữ liệu
         try:
-
-            self.payroll_list.add_payroll( employee_id, month, year, day_off, basic_salary, reward, net_salary)
+            self.payroll_list.add_payroll(employee_id, month, year, day_off, basic_salary, reward, net_salary)
             print("Payroll record added successfully.")
             if hasattr(self.master.master, 'update_Payroll_list_in_Payroll_app'):
-                    self.master.master.update_Payroll_list_in_Payroll_app()
-                    print("Nhân viên đã được thêm thành công và danh sách đã được cập nhật.")
+                self.master.master.update_Payroll_list_in_Payroll_app()
+                print("Nhân viên đã được thêm thành công và danh sách đã được cập nhật.")
         except Exception as e:
             messagebox.showerror("Lỗi", f"Đã xảy ra lỗi khi thêm bảng lương: {e}")
+
+        # Xóa các trường nhập liệu sau khi thêm
         self.clear_entries()
     # def update_employee_position(self, position_list):
     #     self.employee_name_entry['values'] = position_list
