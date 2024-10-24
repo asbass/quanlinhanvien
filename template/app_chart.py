@@ -39,7 +39,7 @@ class EmployeeCharts(tk.Frame):
 
         # Tạo treeview cho nhân viên có lương cao nhất
         self.create_chart_frames()
-
+        
         # Tạo các biểu đồ
         self.create_employee_count_by_department_chart()
         self.create_total_salary_by_department_chart()
@@ -124,10 +124,11 @@ class EmployeeCharts(tk.Frame):
         """Cập nhật Treeview với thông tin về nhân viên có lương cao nhất trong phòng ban."""
         self.highest_salary_treeview.delete(*self.highest_salary_treeview.get_children())
         highest_salary_by_department = self.employee_list.get_highest_salary_by_department()
+        print(highest_salary_by_department)
         if highest_salary_by_department:
             for emp in highest_salary_by_department:
                 formatted_salary = f"{emp['salary']:,.0f} VND"
-                self.highest_salary_treeview.insert('', 'end', values=(emp['name'], emp['department_name'],formatted_salary))
+                self.highest_salary_treeview.insert('', 'end', values=(emp['employee_name'], emp['department_name'],formatted_salary))
         else:
             self.highest_salary_treeview.insert('', 'end', values=('Không có dữ liệu', '', ''))
 
@@ -157,6 +158,8 @@ class EmployeeCharts(tk.Frame):
 
     def create_employee_count_by_department_chart(self):
         """Biểu đồ cột: Số Nhân Viên Theo Phòng Ban."""
+        for widget in self.bar_chart_frame_1.winfo_children():
+            widget.destroy()
         result = self.employee_list.employee_count_by_department_chart()
         if result:
             departments = [row['department'] for row in result]
@@ -181,6 +184,8 @@ class EmployeeCharts(tk.Frame):
 
     def create_total_salary_by_department_chart(self):
         """Biểu đồ cột: Tổng Lương Theo Phòng Ban."""
+        for widget in self.bar_chart_frame_2.winfo_children():
+            widget.destroy()
         result = self.employee_list.total_salary_by_department_chart()
         if result:
             departments = [row['name'] for row in result]

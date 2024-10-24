@@ -46,6 +46,8 @@ class PayrollList:
         print("PayrollList connection closed.")
 
     def salary_trend_chart(self):
+        self.db.close_connection()
+        self.db.connect()
         """Biểu đồ đường: Thay Đổi Lương Theo Thời Gian."""
         query = """
         SELECT month, year, AVG(basic_salary + reward) AS avg_salary 
@@ -55,6 +57,8 @@ class PayrollList:
         """
         return self.db.fetch_all(query)  # Lấy dữ liệu từ database
     def employee_trend_chart(self):
+        self.db.close_connection()
+        self.db.connect()
         """Biểu đồ đường: Thay Đổi Số Nhân Viên Theo Thời Gian."""
         query = """
         SELECT year, month, COUNT(emp_id) AS count 

@@ -71,13 +71,27 @@ class MainApp(tk.Tk):
     def update_employee_list_in_employee_app(self):
         employee_list = self.employee_tab.employee_list.get_employee_names()  # Truy cập từ department_tab
         self.Payroll_tab.update_employee_list(employee_list)
+        self.statistics_tab.update_statistics_treeview()
+        self.statistics_tab.create_employee_count_by_department_chart()
+        self.statistics_tab.update_highest_salary_treeview()
+        self.statistics_tab.create_total_salary_by_department_chart()
+
     def update_department_list_in_department_app(self):
         # Lấy danh sách phòng ban và cập nhật danh sách
         department_list = self.department_tab.department_list.get_department_names()
         self.employee_tab.update_department_list(department_list)
+        self.statistics_tab.update_statistics_treeview()
+        self.statistics_tab.create_employee_count_by_department_chart()
+        self.statistics_tab.update_highest_salary_treeview()
+
     def update_Postion_list_in_position_app(self):
         postion_list = self.Position_tab.position_list.get_position_names()
         self.employee_tab.update_positon_list(postion_list)
+    def update_Payroll_list_in_Payroll_app(self):
+        self.statistics_tab.update_statistics_treeview()
+        self.statistics_tab.update_highest_salary_treeview()
+        self.statistics_tab.create_total_salary_by_department_chart()
+
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()

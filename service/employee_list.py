@@ -220,6 +220,8 @@ class EmployeeList:
             print("Không có nhân viên nào trong cơ sở dữ liệu.")
             return []  # Trả về danh sách rỗng nếu không có nhân viên
     def employee_count_by_department_chart(self):
+        self.db.close_connection()
+        self.db.connect()
         query = """
         SELECT d.name AS department, COUNT(e.emp_id) AS count 
         FROM Employee e
@@ -228,13 +230,18 @@ class EmployeeList:
         """
         return self.db.fetch_all(query)
     def total_salary_by_department_chart(self):
-       
+        self.db.close_connection()
+        self.db.connect()
         query = "SELECT d.name, SUM(p.basic_salary + p.reward) AS total_salary FROM Employee e JOIN Payroll p ON e.emp_id = p.emp_id JOIN Department d ON e.department_id = d.dept_id GROUP BY d.name;"
         return self.db.fetch_all(query)  # Lấy dữ liệu từ database
     def salary_percentage_by_department_chart(self):
+        self.db.close_connection()
+        self.db.connect()
         query = "SELECT d.name, SUM(p.basic_salary + p.reward) AS total_salary FROM Employee e JOIN Payroll p ON e.emp_id = p.emp_id JOIN Department d ON e.department_id = d.dept_id GROUP BY d.name;"
         return self.db.fetch_all(query)  # Lấy dữ liệu từ database
     def get_employees_with_no_days_off(self):
+        self.db.close_connection()
+        self.db.connect()
         """Trả về danh sách tên nhân viên không nghỉ ngày nào."""
         employees = []  # Danh sách chứa tên nhân viên không nghỉ
         query = """
@@ -258,6 +265,8 @@ class EmployeeList:
 
         return employees
     def get_least_days_off_month(self):
+        self.db.close_connection()
+        self.db.connect()
         query = """
             SELECT MONTH(time) AS month, COUNT(*) AS num_days_off
             FROM WorkingTime
@@ -268,24 +277,35 @@ class EmployeeList:
         """
         return self.db.fetch_all(query)  # Lấy dữ liệu từ database
     def get_total_departments(self):
+        self.db.close_connection()
+        self.db.connect()
         query = """SELECT COUNT(*) AS total_departments FROM Department;"""
         return self.db.fetch_one(query)  # Sửa thành fetch_one để chỉ lấy một giá trị
     def get_total_employees(self):
+            self.db.close_connection()
+            self.db.connect()
             query = """SELECT COUNT(*) AS total_employees FROM Employee;"""
             return self.db.fetch_one(query)  # Sửa thành fetch_one để chỉ lấy một giá trị
     def get_highest_salary_by_department(self):
-        query = """SELECT e.name, d.name AS department_name, p.net_salary AS salary
-                    FROM Employee e
-                    JOIN Department d ON e.department_id = d.dept_id
-                    JOIN Payroll p ON e.emp_id = p.emp_id
-                    WHERE p.month = (SELECT MAX(month) FROM Payroll WHERE emp_id = e.emp_id)
-                    AND p.year = (SELECT MAX(year) FROM Payroll WHERE emp_id = e.emp_id)
-                    AND p.net_salary = (
-                        SELECT MAX(net_salary) FROM Payroll WHERE emp_id = e.emp_id
-                        GROUP BY emp_id
-                    );"""
+        self.db.close_connection()
+        self.db.connect()
+        query = """SELECT e.name AS employee_name, d.name AS department_name, p.net_salary AS salary
+            FROM Employee e
+            JOIN Department d ON e.department_id = d.dept_id
+            JOIN Payroll p ON e.emp_id = p.emp_id
+            WHERE p.net_salary = (
+                SELECT MAX(p2.net_salary)
+                FROM Payroll p2
+                JOIN Employee e2 ON p2.emp_id = e2.emp_id
+                WHERE e2.department_id = e.department_id
+            )
+            GROUP BY e.name, d.name, p.net_salary
+            ORDER BY d.name;
+                """
         return self.db.fetch_all(query)  # Lấy dữ liệu từ database
     def get_highest_salary(self):
+        self.db.close_connection()
+        self.db.connect()
         query = """SELECT e.name, p.net_salary AS salary 
                 FROM Employee e
                 JOIN Payroll p ON e.emp_id = p.emp_id
