@@ -187,25 +187,17 @@ class EmployeeApp(tk.Frame):
 
         # Tìm kiếm theo tên trước
         for emp in self.employee_list.get_employees():
-            if keyword in emp.name.lower():  # Tìm kiếm theo tên (chuyển tên về chữ thường)
+            if keyword in emp["name"].lower():  # Tìm kiếm theo tên (chuyển tên về chữ thường)
                 filtered_employees.append(emp)
 
         # Nếu không tìm thấy nhân viên nào theo tên, tìm kiếm theo phòng ban
         if not filtered_employees:
             for emp in self.employee_list.get_employees():
-                if keyword in emp.department.lower():  # Tìm kiếm theo phòng ban
+                department_id = emp.get("department_id")  # Sử dụng get để tránh KeyError
+                department_name = self.employee_list.get_department_name_by_id(department_id)
+                print(department_name)
+                if department_name and keyword in department_name.lower():
                     filtered_employees.append(emp)
-
-        # Nếu vẫn chưa tìm thấy, tìm kiếm từ cơ sở dữ liệu
-        if not filtered_employees:
-            query = "SELECT * FROM Employee WHERE LOWER(name) LIKE %s OR LOWER(department) LIKE %s"
-            search_pattern = f"%{keyword}%"  # Tạo mẫu tìm kiếm
-            results = self.employee_list.db.fetch_all(query, (search_pattern, search_pattern))
-
-            # Chuyển đổi kết quả từ truy vấn thành đối tượng Employee
-            for row in results:
-                emp = Employee(row['name'], row['age'], row['department_id'], row['position_id'])
-                filtered_employees.append(emp)
 
         # Hiển thị danh sách nhân viên đã lọc, nếu không có kết quả thì thông báo
         if filtered_employees:
@@ -214,7 +206,7 @@ class EmployeeApp(tk.Frame):
             messagebox.showinfo("Thông báo", "Không tìm thấy nhân viên!")
             self.update_treeview()  # Hiển thị lại toàn bộ danh sách nhân viên nếu không tìm thấy
 
-        print([emp.name for emp in filtered_employees])  # Kiểm tra xem nhân viên nào được tìm thấy
+        print([emp["name"] for emp in filtered_employees])  # Kiểm tra xem nhân viên nào được tìm thấy
         
 
     def sort_column(self, col, reverse):
