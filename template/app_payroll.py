@@ -161,8 +161,12 @@ class PayrollApp(tk.Frame):
 
         # Gọi phương thức để thêm bảng lương vào cơ sở dữ liệu
         try:
+
             self.payroll_list.add_payroll( employee_id, month, year, day_off, basic_salary, reward, net_salary)
             print("Payroll record added successfully.")
+            if hasattr(self.master.master, 'update_Payroll_list_in_Payroll_app'):
+                    self.master.master.update_Payroll_list_in_Payroll_app()
+                    print("Nhân viên đã được thêm thành công và danh sách đã được cập nhật.")
         except Exception as e:
             messagebox.showerror("Lỗi", f"Đã xảy ra lỗi khi thêm bảng lương: {e}")
         self.clear_entries()
