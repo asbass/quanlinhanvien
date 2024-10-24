@@ -7,8 +7,8 @@ from service.Payroll_list import PayrollList
 from enity.employee import Employee
 from service.posittion_list import PositionList
 from service.woking_time_service import WorkingTimeService
-import uuid
 import re
+import pandas as pd  # Thêm thư viện pandas
 
 class PayrollApp(tk.Frame):
     def __init__(self, parent):
@@ -77,6 +77,9 @@ class PayrollApp(tk.Frame):
         # Nút thêm bảng lương
         self.add_button = tk.Button(self.frame, text="Thêm Bảng Lương", command=self.add_payroll)
         self.add_button.grid(row=9, column=0, padx=10)
+        # Nút xuất file Excel
+        self.export_button = tk.Button(self.frame, text="Xuất File Excel", command=self.export_to_excel)
+        self.export_button.grid(row=9, column=1, padx=10)  # Đặt vị trí nút xuất file
 
         # Cây để hiển thị bảng lương
         self.tree = ttk.Treeview(self, columns=('ID', 'Tên', 'Vị trí', 'Tháng', 'Năm', 'Lương cơ bản', 'Thưởng', 'Ngày Nghỉ', 'Lương thực nhận'), show='headings')
@@ -212,7 +215,23 @@ class PayrollApp(tk.Frame):
         self.month_entry.set('1')  # Đặt lại tháng về mặc định
         self.year_entry.delete(0, tk.END)
         self.year_entry.insert(0, str(datetime.now().year))  # Đặt lại năm hiện tại
+    def export_to_excel(self):
+        """Xuất dữ liệu từ Treeview ra file Excel."""
+        # Lấy dữ liệu từ Treeview
+        data = []
+        for item in self.tree.get_children():
+            values = self.tree.item(item, "values")
+            data.append(values)
 
+        # Tạo DataFrame từ dữ liệu
+        columns = ['ID', 'Tên', 'Vị trí', 'Tháng', 'Năm', 'Lương cơ bản', 'Thưởng', 'Ngày Nghỉ', 'Lương thực nhận']
+        df = pd.DataFrame(data, columns=columns)
+
+        # Xuất DataFrame ra file Excel
+        file_path = "bang_luong.xlsx"  # Đường dẫn file xuất ra
+        df.to_excel(file_path, index=False)
+
+        messagebox.showinfo("Thông báo", f"Xuất file thành công: {file_path}")
     def on_employee_selected(self, event):
         # Lấy thông tin nhân viên đã chọn từ combobox hoặc listbox
         selected_employee_name = self.employee_name_entry.get()
