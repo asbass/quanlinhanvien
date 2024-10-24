@@ -87,17 +87,23 @@ class DepartmentApp(tk.Frame):
         selected_item = self.tree.selection()
         if selected_item:
             # Lấy mã phòng ban từ giá trị đầu tiên trong selected_item
-            dept_id = self.tree.item(selected_item)["values"][0]  # Lấy mã phòng ban
+            dept_id = str(self.tree.item(selected_item)["values"][0])  # Đảm bảo rằng dept_id là chuỗi
+            print(f"Selected Department ID: {dept_id}")
 
             # Tìm phòng ban trong danh sách dựa trên dept_id
-            departments = self.department_list.get_departments()
-            department = next((dept for dept in departments if str(dept['dept_id']) == dept_id), None)
+            department = self.department_list.get_department_by_id(dept_id)
 
-            if department:
+            # In ra để kiểm tra
+            print(f"Department fetched: {department}")
+
+            # Kiểm tra nếu department là một từ điển
+            if isinstance(department, dict) and department.get('dept_id') == dept_id:
                 self.name_entry.delete(0, tk.END)
                 self.name_entry.insert(0, department['name'])
             else:
-                print(f"Department with ID {dept_id} not found.")
+                print(f"Department with ID {dept_id} not found or not in the correct format.")
+
+
     def update_treeview(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
