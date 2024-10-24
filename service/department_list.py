@@ -44,9 +44,10 @@ class departmentList:  # Đặt tên lớp  với chữ cái đầu viết hoa t
         self.db.connect()
         query = "SELECT * FROM Department"
         return self.db.fetch_all(query)
+    
     def get_department_by_id(self, dept_id):
         query = "SELECT * FROM Department WHERE dept_id = %s"
-        return self.fetch_one(query, (dept_id,))
+        return self.db.fetch_one(query, (dept_id,))
 
     def get_department_names(self):
             departments = self.get_departments()

@@ -118,9 +118,13 @@ class PositonsApp(tk.Frame):
 
         if name and salary_coefficient:
             try:
+                
                 # Kiểm tra và thay thế dấu phẩy bằng dấu chấm nếu cần
                 salary_coefficient = salary_coefficient.replace(',', '.')
                 salary_coefficient = float(salary_coefficient)  # Chuyển đổi sang float
+                if salary_coefficient < 0:
+                    messagebox.showerror("Lỗi", "Hệ số lương không thể là số âm. Vui lòng nhập lại.")
+                    return
                 index = next((i for i, pos in enumerate(self.position_list.positions) if pos.position_id == position_id), None)
                 if index is not None:
                     self.position_list.update_position(index, name, salary_coefficient)  # Cập nhật vị trí
