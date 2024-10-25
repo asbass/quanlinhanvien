@@ -55,10 +55,10 @@ class DashboardWokingTime(tk.Frame):
         self.year_combobox = ttk.Combobox(self.content_frame, values=self.get_years())
         self.year_combobox.grid(row=4, column=1, padx=5, pady=5)
         self.year_combobox.set(datetime.datetime.now().year)
-        
+
         # Tạo Treeview với số lượng hàng tối đa là 10
         self.tree = ttk.Treeview(self.content_frame, show="headings", height=10)  # Giới hạn 10 hàng
-        self.tree.grid(row=6, column=0, columnspan=10)
+        self.tree.grid(row=6, column=0, columnspan=5, sticky='nsew')  # Thêm sticky để mở rộng
 
         # Tạo cột tiêu đề
         columns = ["Tên"]
@@ -94,6 +94,16 @@ class DashboardWokingTime(tk.Frame):
 
         self.tree.heading("total_ot", text="Tổng OT")
         self.tree.column("total_ot", anchor="center", width=90)
+
+        # Thêm thanh cuộn ngang cho Treeview
+        self.scrollbar_x = ttk.Scrollbar(self.content_frame, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.grid(row=7, column=0, columnspan=5, sticky='ew')
+        self.tree.configure(xscrollcommand=self.scrollbar_x.set)
+
+        # Thêm thanh cuộn dọc cho Treeview
+        self.scrollbar_y = ttk.Scrollbar(self.content_frame, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.grid(row=6, column=5, sticky='ns')
+        self.tree.configure(yscrollcommand=self.scrollbar_y.set)
 
         # Tạo dữ liệu mẫu
         self.load_data()
